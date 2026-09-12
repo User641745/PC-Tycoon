@@ -37,7 +37,130 @@
             height: 100vh;
         }
 
-        /* --- 3D RENDER CANVAS BACKGROUND --- */
+        /* --- MAIN MENU STYLING --- */
+        #main-menu-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #0f1115 0%, #1a1d24 100%);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .menu-layout {
+            display: flex;
+            align-items: center;
+            gap: 60px;
+            background: rgba(22, 25, 32, 0.6);
+            padding: 50px;
+            border-radius: 16px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            max-width: 900px;
+            width: 90%;
+        }
+
+        .menu-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .menu-right {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-title {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #007acc, #4caf50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .menu-btn-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 250px;
+        }
+
+        .menu-main-btn {
+            background: #1c212c;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 14px 20px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .menu-main-btn:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            transform: translateX(5px);
+        }
+
+        /* Graphic PC Illustration */
+        .pc-svg-art {
+            width: 220px;
+            height: 220px;
+            filter: drop-shadow(0 0 15px rgba(0, 122, 204, 0.4));
+        }
+
+        /* Slot Selection Panel Overlay */
+        #slots-container {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .slot-card {
+            background: #12141a;
+            border: 1px solid var(--border-color);
+            padding: 12px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .slot-card:hover {
+            border-color: var(--accent-green);
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .slot-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .slot-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* --- 3D CANVAS & HUD ARCHITECTURE --- */
         #center-canvas-container {
             position: absolute;
             top: 0;
@@ -45,41 +168,34 @@
             width: 100%;
             height: 100%;
             background: radial-gradient(circle, #202530 0%, #0a0c10 100%);
-            z-index: 1; /* Pushed to the bottom layer */
+            z-index: 1;
         }
 
-        /* --- UI OVERLAY LAYER PLATFORM (Sits completely on top of 3D window) --- */
         #ui-layer-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* Allows mouse clicks to pass through empty spaces to spin the 3D case */
+            pointer-events: none;
             display: flex;
             justify-content: space-between;
-            z-index: 100; /* High index to force visibility above everything */
+            z-index: 100;
         }
 
         .hud-panel {
             width: 340px;
             height: 100vh;
-            background-color: rgba(22, 25, 32, 0.95); /* Semi-transparent sleek slate dark glass overlay */
+            background-color: rgba(22, 25, 32, 0.95);
             box-shadow: 0 0 20px rgba(0,0,0,0.7);
-            pointer-events: auto; /* Re-enables clicking inside the panels */
+            pointer-events: auto;
             display: flex;
             flex-direction: column;
         }
 
-        #left-hud-panel {
-            border-right: 2px solid var(--border-color);
-        }
+        #left-hud-panel { border-right: 2px solid var(--border-color); }
+        #right-hud-panel { border-left: 2px solid var(--border-color); }
 
-        #right-hud-panel {
-            border-left: 2px solid var(--border-color);
-        }
-
-        /* --- UI Elements & Headers --- */
         .panel-header {
             padding: 15px;
             background-color: #12141a;
@@ -93,7 +209,6 @@
             font-size: 1rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: var(--text-main);
         }
 
         .stats-bar {
@@ -106,7 +221,6 @@
             justify-content: space-between;
         }
 
-        /* --- Tabs --- */
         .tab-group {
             display: flex;
             background: #12141a;
@@ -121,7 +235,6 @@
             color: var(--text-muted);
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.2s;
             text-align: center;
         }
 
@@ -138,11 +251,8 @@
             display: none;
         }
 
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content.active { display: block; }
 
-        /* --- Item Cards & Lists --- */
         .part-card {
             background: #1c212c;
             border: 1px solid var(--border-color);
@@ -154,22 +264,9 @@
             gap: 8px;
         }
 
-        .part-card-title {
-            font-weight: bold;
-            font-size: 0.95rem;
-        }
-
-        .part-card-meta {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .part-card-price {
-            color: var(--accent-green);
-            font-weight: bold;
-        }
+        .part-card-title { font-weight: bold; font-size: 0.95rem; }
+        .part-card-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; }
+        .part-card-price { color: var(--accent-green); font-weight: bold; }
 
         .input-bar {
             width: 100%;
@@ -183,10 +280,6 @@
             outline: none;
         }
 
-        .input-bar:focus {
-            border-color: var(--accent-blue);
-        }
-
         .btn {
             background-color: var(--accent-blue);
             color: white;
@@ -197,10 +290,8 @@
             font-weight: 600;
             width: 100%;
             text-align: center;
-            transition: opacity 0.2s;
         }
 
-        .btn:hover { opacity: 0.9; }
         .btn:disabled {
             background-color: #3a3f4d;
             color: var(--text-muted);
@@ -209,11 +300,10 @@
 
         .btn-success { background-color: var(--accent-green); }
 
-        /* --- Floating Center Info Overlays --- */
         #view-controls-tip {
             position: absolute;
             top: 15px;
-            left: 360px; /* Offset to clear the left panel */
+            left: 360px;
             background: rgba(22, 25, 32, 0.85);
             padding: 8px 15px;
             border-radius: 20px;
@@ -235,79 +325,22 @@
             width: 450px;
             text-align: center;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            pointer-events: auto; /* Active clicking */
+            pointer-events: auto;
             z-index: 101;
         }
 
-        .paste-active {
-            cursor: crosshair !important;
-        }
-
-        #paste-progress-bar {
-            width: 100%;
-            background: #242936;
-            height: 10px;
-            border-radius: 5px;
-            margin-top: 8px;
-            overflow: hidden;
-            display: none;
-        }
-
-        #paste-progress-fill {
-            height: 100%;
-            background: #d1d5db;
-            width: 0%;
-        }
+        .paste-active { cursor: crosshair !important; }
+        #paste-progress-bar { width: 100%; background: #242936; height: 10px; border-radius: 5px; margin-top: 8px; overflow: hidden; display: none; }
+        #paste-progress-fill { height: 100%; background: #d1d5db; width: 0%; }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <!-- BACKGROUND LAYER: 3D Render Viewport Window -->
-        <div id="center-canvas-container"></div>
-
-        <!-- FLOATING OVERLAYS: Guidelines & Assembly Console Status Boxes -->
-        <div id="view-controls-tip">🖱️ Left Click + Drag anywhere on the center background to rotate 3D Case</div>
-        
-        <div id="assembly-status-box">
-            <h4 id="status-title" style="margin-bottom: 5px;">Empty Rig Chassis</h4>
-            <p id="status-desc" style="font-size: 0.85rem; color: var(--text-muted);">Open your tablet on the left panel, buy parts, and select them from your inventory to begin assembly.</p>
-            <div id="paste-progress-bar"><div id="paste-progress-fill"></div></div>
-            <button id="action-tool-btn" class="btn" style="margin-top: 10px; display: none;"></button>
-        </div>
-
-        <!-- TOP FOREGROUND LAYER: Full Interactive UI Overlay Shell -->
-        <div id="ui-layer-overlay">
-            
-            <!-- LEFT SCREEN CONTROL HUD: Shop & Inventory Management -->
-            <div id="left-hud-panel" class="hud-panel">
-                <div class="panel-header">
-                    <h2>Tech Tablet v4.0</h2>
-                </div>
-                <div class="stats-bar">
-                    <span>Wallet Balance:</span>
-                    <span id="wallet-display">$2,500</span>
-                </div>
+    <!-- --- MAIN MENU ENGINE OVERLAY PANEL --- -->
+    <div id="main-menu-overlay">
+        <div class="menu-layout">
+            <div class="menu-left">
+                <h1 class="game-title">PC Tycoon</h1>
                 
-                <div class="tab-group">
-                    <button id="store-tab-btn" class="tab-btn active" onclick="switchTab('left', 'store', this)">Shop Parts</button>
-                    <button id="inv-tab-btn" class="tab-btn" onclick="switchTab('left', 'inventory', this)">Inventory</button>
-                </div>
-
-                <div id="tab-store" class="tab-content active">
-                    <div id="store-list"></div>
-                </div>
-
-                <div id="tab-inventory" class="tab-content">
-                    <div id="inventory-list"></div>
-                </div>
-            </div>
-
-            <!-- RIGHT SCREEN CONTROL HUD: Specifications Checklist & E-Commerce Auction Network -->
-            <div id="right-hud-panel" class="hud-panel">
-                <div class="panel-header">
-                    <h2>BayBuy Market Network</h2>
-                </div>
-                
-                <div class="tab-group">
-                    <button id="spec-tab-btn" class="tab-btn active" onclick="switchTab('right', 'rig-status', this)">Current PC Spec</button>
+                <div class="menu-btn-stack" id="main-nav-buttons">
+                    <button class="menu-main-btn" onclick="showSaveSlots()">New Game</button>
