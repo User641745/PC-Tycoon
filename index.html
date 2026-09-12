@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D PC Builder & Market Tycoon</title>
     <!-- Three.js for 3D Graphics -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cloudflare.com"></script>
     <style>
         :root {
             --bg-dark: #0f1115;
@@ -21,7 +21,6 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            user-select: none;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
@@ -153,6 +152,22 @@
             font-weight: bold;
         }
 
+        .input-bar {
+            width: 100%;
+            background: #12141a;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 10px;
+            color: white;
+            font-size: 1rem;
+            margin-top: 5px;
+            outline: none;
+        }
+
+        .input-bar:focus {
+            border-color: var(--accent-blue);
+        }
+
         .btn {
             background-color: var(--accent-blue);
             color: white;
@@ -235,8 +250,8 @@
             </div>
             
             <div class="tab-group">
-                <button class="tab-btn active" onclick="switchTab('left', 'store', event)">Shop Parts</button>
-                <button class="tab-btn" onclick="switchTab('left', 'inventory', event)">Inventory</button>
+                <button id="store-tab-btn" class="tab-btn active" onclick="switchTab('left', 'store', this)">Shop Parts</button>
+                <button id="inv-tab-btn" class="tab-btn" onclick="switchTab('left', 'inventory', this)">Inventory</button>
             </div>
 
             <div id="tab-store" class="tab-content active">
@@ -249,7 +264,7 @@
         </div>
 
         <div id="center-canvas-container">
-            <div id="view-controls-tip">静态 🖱️ Left Click + Drag to rotate 3D Case</div>
+            <div id="view-controls-tip">🖱️ Left Click + Drag to rotate 3D Case</div>
             
             <div id="assembly-status-box">
                 <h4 id="status-title" style="margin-bottom: 5px;">Empty Rig Chassis</h4>
@@ -265,8 +280,8 @@
             </div>
             
             <div class="tab-group">
-                <button class="tab-btn active" onclick="switchTab('right', 'rig-status', event)">Current PC Spec</button>
-                <button class="tab-btn" onclick="switchTab('right', 'marketplace', event)">Online Bids</button>
+                <button id="spec-tab-btn" class="tab-btn active" onclick="switchTab('right', 'rig-status', this)">Current PC Spec</button>
+                <button id="market-tab-btn" class="tab-btn" onclick="switchTab('right', 'marketplace', this)">Online Bids</button>
             </div>
 
             <div id="tab-rig-status" class="tab-content active">
@@ -274,6 +289,12 @@
                     <p style="font-size: 0.8rem; color: var(--text-muted);">Estimated Build Value</p>
                     <h2 id="build-value-display" style="color: var(--accent-green); margin-top: 2px;">$0</h2>
                 </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold;">Set Your Listing Price ($):</label>
+                    <input type="number" id="listing-price-input" class="input-bar" value="1200" placeholder="Type your asking price...">
+                </div>
+
                 <div id="specs-checklist" style="display: flex; flex-direction: column; gap: 8px;"></div>
                 <button id="list-pc-btn" class="btn btn-success" style="margin-top: 20px;" onclick="listPcOnMarket()" disabled>List PC on Market</button>
             </div>
@@ -292,19 +313,3 @@
         let inventory = [];
         let currentBuild = {
             cpu: null,
-            mobo: null,
-            ram: null,
-            gpu: null,
-            psu: null,
-            pasteApplied: 0,
-            coolerMounted: false
-        };
-        let marketListed = false;
-        let activeOffers = [];
-
-        const PART_CATALOG = [
-            { id: 'intel_i9', name: 'Intel Core i9-14900K', cat: 'cpu', brand: 'Intel', socket: 'LGA1700', price: 549, value: 600 },
-            { id: 'intel_i5', name: 'Intel Core i5-14600K', cat: 'cpu', brand: 'Intel', socket: 'LGA1700', price: 319, value: 350 },
-            { id: 'amd_r7', name: 'AMD Ryzen 7 7800X3D', cat: 'cpu', brand: 'AMD', socket: 'AM5', price: 449, value: 500 },
-            { id: 'amd_r5', name: 'AMD Ryzen 5 7600X', cat: 'cpu', brand: 'AMD', socket: 'AM5', price: 229, value: 260 },
-            
