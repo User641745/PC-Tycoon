@@ -13,6 +13,7 @@
             --border-color: #242936;
             --accent-blue: #007acc;
             --accent-green: #4caf50;
+            --accent-purple: #9c27b0;
             --text-main: #e3e6ed;
             --text-muted: #8b949e;
         }
@@ -49,7 +50,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
 
         .menu-layout {
@@ -73,13 +74,6 @@
             gap: 20px;
         }
 
-        .menu-right {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
         .game-title {
             font-size: 3rem;
             font-weight: 800;
@@ -95,7 +89,8 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            width: 250px;
+            width: 320px;
+            transition: all 0.3s ease;
         }
 
         .menu-main-btn {
@@ -117,26 +112,20 @@
             transform: translateX(5px);
         }
 
-        /* Graphic PC Illustration */
-        .pc-svg-art {
-            width: 220px;
-            height: 220px;
-            filter: drop-shadow(0 0 15px rgba(0, 122, 204, 0.4));
-        }
-
-        /* Slot Selection Panel Overlay */
-        #slots-container {
+        /* Slot & Mode Panels Overlay */
+        #slots-container, #gamemode-container {
             display: none;
             flex-direction: column;
             gap: 10px;
-            width: 100%;
+            width: 320px;
             margin-top: 10px;
+            animation: fadeIn 0.4s ease forwards;
         }
 
-        .slot-card {
+        .slot-card, .mode-card {
             background: #12141a;
             border: 1px solid var(--border-color);
-            padding: 12px 15px;
+            padding: 14px 18px;
             border-radius: 6px;
             cursor: pointer;
             display: flex;
@@ -148,16 +137,50 @@
         .slot-card:hover {
             border-color: var(--accent-green);
             background: rgba(76, 175, 80, 0.05);
+            transform: translateY(-2px);
         }
 
-        .slot-name {
+        .mode-card:hover.career-mode {
+            border-color: var(--accent-green);
+            background: rgba(76, 175, 80, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .mode-card:hover.sandbox-mode {
+            border-color: var(--accent-purple);
+            background: rgba(156, 39, 176, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .slot-name, .mode-name {
             font-weight: bold;
             font-size: 0.95rem;
+            color: var(--text-main);
         }
 
-        .slot-meta {
+        .slot-meta, .mode-meta {
             font-size: 0.8rem;
             color: var(--text-muted);
+            text-align: right;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: 600;
+            text-align: left;
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+        .back-btn:hover {
+            color: var(--text-main);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* --- 3D CANVAS & HUD ARCHITECTURE --- */
@@ -167,7 +190,6 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, #202530 0%, #0a0c10 100%);
             z-index: 1;
         }
 
@@ -200,15 +222,6 @@
             padding: 15px;
             background-color: #12141a;
             border-bottom: 2px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .panel-header h2 {
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
         .stats-bar {
@@ -235,7 +248,6 @@
             color: var(--text-muted);
             cursor: pointer;
             font-weight: 600;
-            text-align: center;
         }
 
         .tab-btn.active {
@@ -259,25 +271,6 @@
             border-radius: 6px;
             padding: 12px;
             margin-bottom: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .part-card-title { font-weight: bold; font-size: 0.95rem; }
-        .part-card-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; }
-        .part-card-price { color: var(--accent-green); font-weight: bold; }
-
-        .input-bar {
-            width: 100%;
-            background: #12141a;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 10px;
-            color: white;
-            font-size: 1rem;
-            margin-top: 5px;
-            outline: none;
         }
 
         .btn {
@@ -289,61 +282,44 @@
             cursor: pointer;
             font-weight: 600;
             width: 100%;
-            text-align: center;
+            margin-top: 10px;
         }
-
-        .btn:disabled {
-            background-color: #3a3f4d;
-            color: var(--text-muted);
-            cursor: not-allowed;
-        }
-
-        .btn-success { background-color: var(--accent-green); }
-
-        #view-controls-tip {
-            position: absolute;
-            top: 15px;
-            left: 360px;
-            background: rgba(22, 25, 32, 0.85);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            border: 1px solid var(--border-color);
-            pointer-events: none;
-            z-index: 101;
-        }
-
-        #assembly-status-box {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(22, 25, 32, 0.95);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            width: 450px;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            pointer-events: auto;
-            z-index: 101;
-        }
-
-        .paste-active { cursor: crosshair !important; }
-        #paste-progress-bar { width: 100%; background: #242936; height: 10px; border-radius: 5px; margin-top: 8px; overflow: hidden; display: none; }
-        #paste-progress-fill { height: 100%; background: #d1d5db; width: 0%; }
     </style>
 </head>
 <body>
 
-    <!-- --- MAIN MENU ENGINE OVERLAY PANEL --- -->
+<div id="game-container">
+    <!-- Main Menu Overlay -->
     <div id="main-menu-overlay">
         <div class="menu-layout">
             <div class="menu-left">
                 <h1 class="game-title">PC Tycoon</h1>
                 
-                <div class="menu-btn-stack" id="main-nav-buttons">
-                    <button> class="menu-main-btn" onclick="showSaveSlots()">New Game</button>
-                   
-                    <div>
-                        
+                <!-- Main Action Stack -->
+                <div class="menu-btn-stack" id="main-nav-stack">
+                    <button class="menu-main-btn" id="btn-new-game">New Game</button>
+                    <button class="menu-main-btn" id="btn-load-trigger">Load Game</button>
+                </div>
+
+                <!-- Save Slots Layer Panel -->
+                <div id="slots-container">
+                    <div class="slot-card" onclick="selectSaveSlot(1)">
+                        <div class="slot-name">Slot 1 (Empty)</div>
+                        <div class="slot-meta"><div>--/--</div><div>New Profile</div></div>
+                    </div>
+                    <div class="slot-card" onclick="selectSaveSlot(2)">
+                        <div class="slot-name">Slot 2 (Empty)</div>
+                        <div class="slot-meta"><div>--/--</div><div>New Profile</div></div>
+                    </div>
+                    <div class="slot-card" onclick="selectSaveSlot(3)">
+                        <div class="slot-name">Slot 3 (Empty)</div>
+                        <div class="slot-meta"><div>--/--</div><div>New Profile</div></div>
+                    </div>
+                    <button class="back-btn" id="btn-slots-back">← Back to Menu</button>
+                </div>
+
+                <!-- New Gamemode Prompt Selection Stack -->
+                <div id="gamemode-container">
+                    <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">Select System Logic Environment:</div>
+                    <div class="mode-card career-mode" onclick="setGamemode('career')">
+                        <div class="mode-name" style="color: var(--accent-green);">💼 Career Mode</div>
