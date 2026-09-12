@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D PC Builder & Market Tycoon</title>
     <!-- Three.js for 3D Graphics -->
-    <script src="https://cloudflare.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
             --bg-dark: #0f1115;
@@ -33,7 +33,6 @@
             display: flex;
         }
 
-        /* --- Main Layout --- */
         #game-container {
             display: flex;
             width: 100vw;
@@ -65,7 +64,6 @@
             z-index: 10;
         }
 
-        /* --- UI Elements & Headers --- */
         .panel-header {
             padding: 15px;
             background-color: #12141a;
@@ -92,7 +90,6 @@
             justify-content: space-between;
         }
 
-        /* --- Tabs --- */
         .tab-group {
             display: flex;
             background: #12141a;
@@ -128,7 +125,6 @@
             display: block;
         }
 
-        /* --- Item Cards & Lists --- */
         .part-card {
             background: #1c212c;
             border: 1px solid var(--border-color);
@@ -179,7 +175,6 @@
 
         .btn-success { background-color: var(--accent-green); }
 
-        /* --- Help Overlay --- */
         #view-controls-tip {
             position: absolute;
             top: 15px;
@@ -192,7 +187,6 @@
             pointer-events: none;
         }
 
-        /* --- Assembly Instructions / Status --- */
         #assembly-status-box {
             position: absolute;
             bottom: 20px;
@@ -207,7 +201,6 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
-        /* --- Paste Tool Specific Style --- */
         .paste-active {
             cursor: crosshair !important;
         }
@@ -226,19 +219,12 @@
             height: 100%;
             background: #d1d5db;
             width: 0%;
-            transition: width 0.1s;
-        }
-
-        /* --- Marketplace / Offer Card --- */
-        .offer-card {
-            border-left: 4px solid var(--accent-blue);
         }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <!-- LEFT PANEL: Tech Tablet (Store/Inventory) -->
         <div id="left-panel">
             <div class="panel-header">
                 <h2>Tech Tablet v4.0</h2>
@@ -249,24 +235,21 @@
             </div>
             
             <div class="tab-group">
-                <button class="tab-btn active" onclick="switchTab('left', 'store')">Shop Parts</button>
-                <button class="tab-btn" onclick="switchTab('left', 'inventory')">Inventory</button>
+                <button class="tab-btn active" onclick="switchTab('left', 'store', event)">Shop Parts</button>
+                <button class="tab-btn" onclick="switchTab('left', 'inventory', event)">Inventory</button>
             </div>
 
-            <!-- Store Tab -->
             <div id="tab-store" class="tab-content active">
                 <div id="store-list"></div>
             </div>
 
-            <!-- Inventory Tab -->
             <div id="tab-inventory" class="tab-content">
                 <div id="inventory-list"></div>
             </div>
         </div>
 
-        <!-- CENTER CANVAS: 3D Environment -->
         <div id="center-canvas-container">
-            <div id="view-controls-tip">🖱️ Left Click + Drag to rotate 3D Case</div>
+            <div id="view-controls-tip">静态 🖱️ Left Click + Drag to rotate 3D Case</div>
             
             <div id="assembly-status-box">
                 <h4 id="status-title" style="margin-bottom: 5px;">Empty Rig Chassis</h4>
@@ -276,18 +259,16 @@
             </div>
         </div>
 
-        <!-- RIGHT PANEL: Office System (Sell/Marketplace) -->
         <div id="right-panel">
             <div class="panel-header">
                 <h2>BayBuy Market Network</h2>
             </div>
             
             <div class="tab-group">
-                <button class="tab-btn active" onclick="switchTab('right', 'rig-status')">Current PC Spec</button>
-                <button class="tab-btn" onclick="switchTab('right', 'marketplace')">Online Bids</button>
+                <button class="tab-btn active" onclick="switchTab('right', 'rig-status', event)">Current PC Spec</button>
+                <button class="tab-btn" onclick="switchTab('right', 'marketplace', event)">Online Bids</button>
             </div>
 
-            <!-- Rig Status Tab -->
             <div id="tab-rig-status" class="tab-content active">
                 <div style="background: #12141a; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
                     <p style="font-size: 0.8rem; color: var(--text-muted);">Estimated Build Value</p>
@@ -297,7 +278,6 @@
                 <button id="list-pc-btn" class="btn btn-success" style="margin-top: 20px;" onclick="listPcOnMarket()" disabled>List PC on Market</button>
             </div>
 
-            <!-- Marketplace Tab -->
             <div id="tab-marketplace" class="tab-content">
                 <div id="market-status-msg" style="color: var(--text-muted); text-align: center; margin-top: 20px;">
                     Your build must be fully built and listed online to receive dynamic market offers.
@@ -308,9 +288,23 @@
     </div>
 
     <script>
-        // --- GAME DATA AND HARDWARE ARCHITECTURE ---
         let wallet = 2500;
         let inventory = [];
         let currentBuild = {
             cpu: null,
             mobo: null,
+            ram: null,
+            gpu: null,
+            psu: null,
+            pasteApplied: 0,
+            coolerMounted: false
+        };
+        let marketListed = false;
+        let activeOffers = [];
+
+        const PART_CATALOG = [
+            { id: 'intel_i9', name: 'Intel Core i9-14900K', cat: 'cpu', brand: 'Intel', socket: 'LGA1700', price: 549, value: 600 },
+            { id: 'intel_i5', name: 'Intel Core i5-14600K', cat: 'cpu', brand: 'Intel', socket: 'LGA1700', price: 319, value: 350 },
+            { id: 'amd_r7', name: 'AMD Ryzen 7 7800X3D', cat: 'cpu', brand: 'AMD', socket: 'AM5', price: 449, value: 500 },
+            { id: 'amd_r5', name: 'AMD Ryzen 5 7600X', cat: 'cpu', brand: 'AMD', socket: 'AM5', price: 229, value: 260 },
+            
