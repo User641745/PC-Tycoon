@@ -29,40 +29,57 @@
             color: var(--text-main);
             overflow: hidden;
             height: 100vh;
-            display: flex;
         }
 
         #game-container {
-            display: flex;
+            position: relative;
             width: 100vw;
             height: 100vh;
         }
 
-        #left-panel {
-            width: 320px;
-            background-color: var(--panel-dark);
-            border-right: 2px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            z-index: 10;
-        }
-
+        /* --- 3D RENDER CANVAS BACKGROUND --- */
         #center-canvas-container {
-            flex-grow: 1;
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
             background: radial-gradient(circle, #202530 0%, #0a0c10 100%);
+            z-index: 1; /* Pushed to the bottom layer */
         }
 
-        #right-panel {
-            width: 380px;
-            background-color: var(--panel-dark);
-            border-left: 2px solid var(--border-color);
+        /* --- UI OVERLAY LAYER PLATFORM (Sits completely on top of 3D window) --- */
+        #ui-layer-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allows mouse clicks to pass through empty spaces to spin the 3D case */
+            display: flex;
+            justify-content: space-between;
+            z-index: 100; /* High index to force visibility above everything */
+        }
+
+        .hud-panel {
+            width: 340px;
+            height: 100vh;
+            background-color: rgba(22, 25, 32, 0.95); /* Semi-transparent sleek slate dark glass overlay */
+            box-shadow: 0 0 20px rgba(0,0,0,0.7);
+            pointer-events: auto; /* Re-enables clicking inside the panels */
             display: flex;
             flex-direction: column;
-            z-index: 10;
         }
 
+        #left-hud-panel {
+            border-right: 2px solid var(--border-color);
+        }
+
+        #right-hud-panel {
+            border-left: 2px solid var(--border-color);
+        }
+
+        /* --- UI Elements & Headers --- */
         .panel-header {
             padding: 15px;
             background-color: #12141a;
@@ -89,6 +106,7 @@
             justify-content: space-between;
         }
 
+        /* --- Tabs --- */
         .tab-group {
             display: flex;
             background: #12141a;
@@ -97,7 +115,7 @@
 
         .tab-btn {
             flex: 1;
-            padding: 10px;
+            padding: 12px 10px;
             background: transparent;
             border: none;
             color: var(--text-muted);
@@ -124,6 +142,7 @@
             display: block;
         }
 
+        /* --- Item Cards & Lists --- */
         .part-card {
             background: #1c212c;
             border: 1px solid var(--border-color);
@@ -172,7 +191,7 @@
             background-color: var(--accent-blue);
             color: white;
             border: none;
-            padding: 8px 12px;
+            padding: 10px 12px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
@@ -190,16 +209,18 @@
 
         .btn-success { background-color: var(--accent-green); }
 
+        /* --- Floating Center Info Overlays --- */
         #view-controls-tip {
             position: absolute;
             top: 15px;
-            left: 15px;
+            left: 360px; /* Offset to clear the left panel */
             background: rgba(22, 25, 32, 0.85);
             padding: 8px 15px;
             border-radius: 20px;
             font-size: 0.85rem;
             border: 1px solid var(--border-color);
             pointer-events: none;
+            z-index: 101;
         }
 
         #assembly-status-box {
@@ -207,13 +228,15 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(22, 25, 32, 0.9);
+            background: rgba(22, 25, 32, 0.95);
             border: 2px solid var(--border-color);
             border-radius: 8px;
             padding: 15px;
             width: 450px;
             text-align: center;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            pointer-events: auto; /* Active clicking */
+            z-index: 101;
         }
 
         .paste-active {
@@ -240,76 +263,51 @@
 <body>
 
     <div id="game-container">
-        <div id="left-panel">
-            <div class="panel-header">
-                <h2>Tech Tablet v4.0</h2>
-            </div>
-            <div class="stats-bar">
-                <span>Wallet Balance:</span>
-                <span id="wallet-display">$2,500</span>
-            </div>
-            
-            <div class="tab-group">
-                <button id="store-tab-btn" class="tab-btn active" onclick="switchTab('left', 'store', this)">Shop Parts</button>
-                <button id="inv-tab-btn" class="tab-btn" onclick="switchTab('left', 'inventory', this)">Inventory</button>
-            </div>
+        <!-- BACKGROUND LAYER: 3D Render Viewport Window -->
+        <div id="center-canvas-container"></div>
 
-            <div id="tab-store" class="tab-content active">
-                <div id="store-list"></div>
-            </div>
-
-            <div id="tab-inventory" class="tab-content">
-                <div id="inventory-list"></div>
-            </div>
+        <!-- FLOATING OVERLAYS: Guidelines & Assembly Console Status Boxes -->
+        <div id="view-controls-tip">🖱️ Left Click + Drag anywhere on the center background to rotate 3D Case</div>
+        
+        <div id="assembly-status-box">
+            <h4 id="status-title" style="margin-bottom: 5px;">Empty Rig Chassis</h4>
+            <p id="status-desc" style="font-size: 0.85rem; color: var(--text-muted);">Open your tablet on the left panel, buy parts, and select them from your inventory to begin assembly.</p>
+            <div id="paste-progress-bar"><div id="paste-progress-fill"></div></div>
+            <button id="action-tool-btn" class="btn" style="margin-top: 10px; display: none;"></button>
         </div>
 
-        <div id="center-canvas-container">
-            <div id="view-controls-tip">🖱️ Left Click + Drag to rotate 3D Case</div>
+        <!-- TOP FOREGROUND LAYER: Full Interactive UI Overlay Shell -->
+        <div id="ui-layer-overlay">
             
-            <div id="assembly-status-box">
-                <h4 id="status-title" style="margin-bottom: 5px;">Empty Rig Chassis</h4>
-                <p id="status-desc" style="font-size: 0.85rem; color: var(--text-muted);">Open your tablet, order parts, and select them from your inventory to begin assembly.</p>
-                <div id="paste-progress-bar"><div id="paste-progress-fill"></div></div>
-                <button id="action-tool-btn" class="btn" style="margin-top: 10px; display: none;"></button>
-            </div>
-        </div>
-
-        <div id="right-panel">
-            <div class="panel-header">
-                <h2>BayBuy Market Network</h2>
-            </div>
-            
-            <div class="tab-group">
-                <button id="spec-tab-btn" class="tab-btn active" onclick="switchTab('right', 'rig-status', this)">Current PC Spec</button>
-                <button id="market-tab-btn" class="tab-btn" onclick="switchTab('right', 'marketplace', this)">Online Bids</button>
-            </div>
-
-            <div id="tab-rig-status" class="tab-content active">
-                <div style="background: #12141a; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-                    <p style="font-size: 0.8rem; color: var(--text-muted);">Estimated Build Value</p>
-                    <h2 id="build-value-display" style="color: var(--accent-green); margin-top: 2px;">$0</h2>
+            <!-- LEFT SCREEN CONTROL HUD: Shop & Inventory Management -->
+            <div id="left-hud-panel" class="hud-panel">
+                <div class="panel-header">
+                    <h2>Tech Tablet v4.0</h2>
+                </div>
+                <div class="stats-bar">
+                    <span>Wallet Balance:</span>
+                    <span id="wallet-display">$2,500</span>
                 </div>
                 
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold;">Set Your Listing Price ($):</label>
-                    <input type="number" id="listing-price-input" class="input-bar" value="1200" placeholder="Type your asking price...">
+                <div class="tab-group">
+                    <button id="store-tab-btn" class="tab-btn active" onclick="switchTab('left', 'store', this)">Shop Parts</button>
+                    <button id="inv-tab-btn" class="tab-btn" onclick="switchTab('left', 'inventory', this)">Inventory</button>
                 </div>
 
-                <div id="specs-checklist" style="display: flex; flex-direction: column; gap: 8px;"></div>
-                <button id="list-pc-btn" class="btn btn-success" style="margin-top: 20px;" onclick="listPcOnMarket()" disabled>List PC on Market</button>
-            </div>
-
-            <div id="tab-marketplace" class="tab-content">
-                <div id="market-status-msg" style="color: var(--text-muted); text-align: center; margin-top: 20px;">
-                    Your build must be fully built and listed online to receive dynamic market offers.
+                <div id="tab-store" class="tab-content active">
+                    <div id="store-list"></div>
                 </div>
-                <div id="offers-list"></div>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        let wallet = 2500;
-        let inventory = [];
-        let currentBuild = {
-            cpu: null,
+                <div id="tab-inventory" class="tab-content">
+                    <div id="inventory-list"></div>
+                </div>
+            </div>
+
+            <!-- RIGHT SCREEN CONTROL HUD: Specifications Checklist & E-Commerce Auction Network -->
+            <div id="right-hud-panel" class="hud-panel">
+                <div class="panel-header">
+                    <h2>BayBuy Market Network</h2>
+                </div>
+                
+                <div class="tab-group">
+                    <button id="spec-tab-btn" class="tab-btn active" onclick="switchTab('right', 'rig-status', this)">Current PC Spec</button>
