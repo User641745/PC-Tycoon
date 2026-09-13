@@ -3,155 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desk Workspace</title>
+    <title>Ultimate PC Simulator - Hardware Store</title>
     <style>
-        /* Main page setup */
         body {
             margin: 0;
             padding: 0;
-            background: radial-gradient(circle at center, #2c3e50, #0f171e);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            color: #ffffff;
-            overflow: hidden;
-        }
-
-        /* The Custom Solid Black Background Panel Container */
-        .workspace-panel {
-            background-color: #000000;
-            border: 2px solid #333333;
-            padding: 40px 60px;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 25px;
-            letter-spacing: 1px;
-            color: #ffffff;
-        }
-
-        /* The Custom Blue Button Configuration */
-        #open-browser-btn {
-            background: linear-gradient(135deg, #0052d4, #4364f7, #6fb1fc);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #12121c);
             color: white;
-            border: none;
-            padding: 18px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            text-transform: uppercase;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(67, 100, 247, 0.4);
-            transition: all 0.2s ease-in-out;
-        }
-
-        #open-browser-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(111, 177, 252, 0.6);
-        }
-
-        #open-browser-btn:active {
-            transform: translateY(1px);
-        }
-
-        /* Overlay frame to inject website.html securely into GitHub */
-        #laptop-screen-modal {
-            display: none; 
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 10;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content-wrapper {
-            width: 90%;
-            height: 85%;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            position: relative;
         }
 
-        #laptop-iframe {
+        /* Navigational Header Bar */
+        .game-navbar {
+            background-color: #0f0f1a;
+            border-bottom: 2px solid #2d2d44;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00c6ff;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 20px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-links a.active {
+            background-color: #0072ff;
+            color: white;
+        }
+
+        /* Storefront Superstore Catalog Grid Structure Layout */
+        .store-viewport {
+            flex-grow: 1;
+            padding: 40px;
+            max-width: 1100px;
+            margin: 0 auto;
             width: 100%;
-            height: 100%;
-            border: none;
+            box-sizing: border-box;
         }
 
-        .close-laptop-btn {
-            position: absolute;
-            top: 12px;
-            left: 15px;
-            background-color: #ff5f56;
+        .store-header {
+            border-bottom: 2px solid #00c6ff;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        .catalog-matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .component-item-card {
+            background-color: #0f0f1a;
+            border: 1px solid #2d2d44;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: border-color 0.2s;
+        }
+
+        .component-item-card:hover {
+            border-color: #00c6ff;
+        }
+
+        .component-item-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: #ffffff;
+        }
+
+        .component-class {
+            font-size: 12px;
+            color: #8b8ba8;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .component-cost-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 15px;
+        }
+
+        .purchase-action-btn {
+            background-color: #0072ff;
+            color: white;
             border: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
             cursor: pointer;
-            z-index: 20;
-        }
-        
-        .close-laptop-btn:hover {
-            background-color: #e04a41;
+            width: 100%;
+            transition: background 0.15s;
         }
 
-        #inventory-cart {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #6fb1fc;
+        .purchase-action-btn:hover {
+            background-color: #0052d4;
         }
     </style>
 </head>
 <body>
 
-    <!-- Black Background Workspace Box -->
-    <div class="workspace-panel">
-        <h1>🖥️ SYSTEM COMMAND CENTER</h1>
-        
-        <!-- On-Button Script Trigger updated to "Open Browser" -->
-        <button id="open-browser-btn" onclick="openLaptopView()">Open Browser</button>
-        
-        <div id="inventory-cart">Parts Collected: None</div>
-    </div>
+    <!-- Top Navigation Bar Layout -->
+    <nav class="game-navbar">
+        <div class="nav-brand">🖥️ PC SIMULATOR</div>
+        <div class="nav-links">
+            <!-- Links back to index.html home workspace file -->
+            <a href="index.html">Home Base</a>
+            <a href="store.html" class="active">Hardware Shop</a>
+        </div>
+    </nav>
 
-    <!-- The Popup Browser Modal Interface -->
-    <div id="laptop-screen-modal">
-        <div class="modal-content-wrapper">
-            <button class="close-laptop-btn" onclick="closeLaptopView()"></button>
-            <iframe id="laptop-iframe" src=""></iframe>
+    <!-- Main Marketplace Display Content Canvas Area -->
+    <div class="store-viewport">
+        <div class="store-header">
+            <h2>🛒 Global Parts Mega-Marketplace</h2>
+            <p>Purchase custom computing assets here. They will automatically be transferred back onto your home rig base blueprint database profiles.</p>
+        </div>
+
+        <div class="catalog-matrix-grid" id="shop-catalog-display">
+            <!-- Hardware component items get rendered here automatically -->
         </div>
     </div>
 
     <script>
-        function openLaptopView() {
-            document.getElementById('laptop-iframe').src = 'website.html';
-            document.getElementById('laptop-screen-modal').style.display = 'flex';
-        }
+        const storeRegistryData = [
+            { title: "NVIDIA GeForce RTX 5090 GPU", price: "$1,999", spec: "Graphics Card" },
+            { title: "Intel Core i9-16900K CPU", price: "$599", spec: "Processor" },
+            { title: "AMD Ryzen 9 9950X CPU", price: "$649", spec: "Processor" },
+            { title: "Corsair Vengeance 64GB DDR5", price: "$249", spec: "RAM Module" },
+            { title: "Samsung 990 PRO 2TB NVMe SSD", price: "$189", spec: "Storage Drive" }
+        ];
 
-        function closeLaptopView() {
-            document.getElementById('laptop-screen-modal').style.display = 'none';
-            document.getElementById('laptop-iframe').src = '';
-        }
-
-        window.addEventListener('message', function(event) {
-            if (event.data && event.data.type === 'ITEM_PURCHASED') {
-                document.getElementById('inventory-cart').innerHTML = `📦 Latest Part Obtained: <strong>${event.data.itemName}</strong>`;
-            }
+        const targetGrid = document.getElementById('shop-catalog-display');
+        storeRegistryData.forEach(item => {
+            const layoutCard = document.createElement('div');
+            layoutCard.className = 'component-item-card';
+            layoutCard.innerHTML = `
+                <div>
+                    <div class="component-class">${item.spec}</div>
+                    <h3>${item.title}</h3>
+                </div>
+                <div>
+                    <div class="component-cost-value">${item.price}</div>
+                    <button class="purchase-action-btn" onclick="executeBuyOrder('${item.title}')">Acquire Part</button>
+                </div>
+            `;
+            targetGrid.appendChild(layoutCard);
         });
+
+        function executeBuyOrder(name) {
+            // Retrieve current database profiles saved array tracking inventory
+            let currentInv = JSON.parse(localStorage.getItem('pc_simulator_inventory')) || [];
+            
+            if(!currentInv.includes(name)){
+                currentInv.push(name);
+            }
+            
+            // Save data pack back safely into browser cache storage profile memory
+            localStorage.setItem('pc_simulator_inventory', JSON.stringify(currentInv));
+            
+            alert(`📦 Part Purchased: [ ${name} ] has been shipped to Home Base! Click 'Home Base' in the menu to check your rig build profile.`);
+        }
     </script>
 
 </body>
