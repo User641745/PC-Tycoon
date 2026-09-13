@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Orbit Viewport Simulator</title>
+    <title>3D Viewport Simulator</title>
     <style>
-        /* Full-screen dark immersive workspace with no text clutter */
+        /* Immersive full-screen background with no extra text variables */
         body {
             margin: 0;
             padding: 0;
@@ -17,7 +17,6 @@
             align-items: center;
         }
 
-        /* The canvas render viewport container box */
         #render-container {
             width: 100%;
             height: 100%;
@@ -28,85 +27,125 @@
             cursor: grabbing;
         }
     </style>
-    <!-- Secure, matching double-quote links to inject the Three.js 3D engine onto his Chromebook -->
+    <!-- We only pull the core Three.js framework; no extra control files needed -->
     <script src="https://cloudflare.com"></script>
-    <!-- OrbitControls extension script to compute camera angles dynamically based on cursor movement -->
-    <script src="https://jsdelivr.net"></script>
 </head>
 <body>
 
     <div id="render-container"></div>
 
     <script>
-        // Start engine calculations cleanly once document parsing cycles finish
         window.addEventListener('DOMContentLoaded', () => {
-            if (typeof THREE !== 'undefined' && typeof THREE.OrbitControls !== 'undefined') {
-                init3DOrbitEngine();
+            if (typeof THREE !== 'undefined') {
+                initCustom3DEngine();
             }
         });
 
-        function init3DOrbitEngine() {
+        function initCustom3DEngine() {
             const container = document.getElementById('render-container');
             const scene = new THREE.Scene();
             scene.background = new THREE.Color(0x050508);
 
-            // 1. DYNAMIC PERSPECTIVE CAMERA MATRIX 
+            // 1. DYNAMIC PERSPECTIVE CAMERA MATRIX Setup
             const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(3, 3, 4); // Position the camera offset at a downward viewing angle
+            camera.position.set(0, 2, 4);
 
-            // 2. WebGL GRAPHICS RENDERING PIPELINE
+            // 2. WebGL RENDERING ENGINE Setup
             const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimized resolution mapping for Chromebooks
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             container.appendChild(renderer.domElement);
 
-            // 3. 360° ORBIT CONTROLS RADAR INTERFACE
-            const navigationControls = new THREE.OrbitControls(camera, renderer.domElement);
-            navigationControls.enableDamping = true; // Adds realistic tracking weight momentum to camera drags
-            navigationControls.dampingFactor = 0.05;
-            navigationControls.minDistance = 1.5;   // Limit how far you can zoom inward
-            navigationControls.maxDistance = 12;    // Limit how far back camera tracking bounds can pass out
-
-            // 4. WORKSPACE PLATFORM GRID FLOOR ALIGNMENT MESH
+            // 3. STAGE GRID FLOOR HELPER MESH
             const gridFloorHelper = new THREE.GridHelper(20, 20, 0x444444, 0x1f2330);
-            gridFloorHelper.position.y = -0.75; // Positioned flush against the bottom face of the block
+            gridFloorHelper.position.y = -1.0;
             scene.add(gridFloorHelper);
 
-            // 5. STAGE ILLUMINATION SYSTEM LIGHT CODES
-            const keyDirectionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-            keyDirectionalLight.position.set(5, 8, 5);
-            scene.add(keyDirectionalLight);
+            // 4. CRISP STUDIO ILLUMINATION LIGHTS
+            const lightTop = new THREE.DirectionalLight(0xffffff, 1.5);
+            lightTop.position.set(5, 10, 5);
+            scene.add(lightTop);
 
-            const fillDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            fillDirectionalLight.position.set(-5, 4, -5);
-            scene.add(fillDirectionalLight);
+            const lightBack = new THREE.DirectionalLight(0xffffff, 0.8);
+            lightBack.position.set(-5, 5, -5);
+            scene.add(lightBack);
 
             const ambientCoreBaseLight = new THREE.AmbientLight(0xffffff, 0.4);
             scene.add(ambientCoreBaseLight);
 
-            // 6. SPAWN THE MAIN TARGET 3D SYSTEM CUBE BLOCK
-            const structuralBoxGeo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+            // 5. SPAWN THE PURE WHITE 3D TARGET CUBE BLOCK
+            const structuralBoxGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
             const blockMaterial = new THREE.MeshStandardMaterial({
-                color: 0xffffff, // Pure solid white profile paint finish
-                roughness: 0.2,  // Matte finish that dynamically catches shadows
+                color: 0xffffff,
+                roughness: 0.2,
                 metalness: 0.1
             });
-            const mainTargetBlockMesh = new THREE.Mesh(structuralBoxGeo, blockMaterial);
-            scene.add(mainTargetBlockMesh);
+            const mainBlockMesh = new THREE.Mesh(structuralBoxGeo, blockMaterial);
+            scene.add(mainBlockMesh);
 
-            // 7. ANIMATION RENDERING INTERVAL LOOP ENGINE
+            // 6. CUSTOM NATIVE CLICK-AND-DRAG CALCULATION SYSTEM
+            let isDraggingMouse = false;
+            let previousMousePosition = { x: 0, y: 0 };
+
+            // Triggers rotation values the moment mouse clicks down over viewport
+            window.addEventListener('mousedown', (e) => {
+                isDraggingMouse = true;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDraggingMouse = false;
+            });
+
+            // Calculates changes in coordinates to turn the block up, down, left, and right
+            window.addEventListener('mousemove', (e) => {
+                if (!isDraggingMouse) return;
+
+                const deltaMove = {
+                    x: e.clientX - previousMousePosition.x,
+                    y: e.clientY - previousMousePosition.y
+                };
+
+                // Apply rotation tracking updates to the cube geometry group directly
+                mainBlockMesh.rotation.y += deltaMove.x * 0.007; // Sweeps Left and Right
+                mainBlockMesh.rotation.x += deltaMove.y * 0.007; // Tilts Up and Down
+
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            // Touch Screen Support for Chromebook trackpads
+            window.addEventListener('touchstart', (e) => {
+                isDraggingMouse = true;
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            });
+
+            window.addEventListener('touchend', () => {
+                isDraggingMouse = false;
+            });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!isDraggingMouse) return;
+                const deltaMove = {
+                    x: e.touches[0].clientX - previousMousePosition.x,
+                    y: e.touches[0].clientY - previousMousePosition.y
+                };
+                mainBlockMesh.rotation.y += deltaMove.x * 0.01;
+                mainBlockMesh.rotation.x += deltaMove.y * 0.01;
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            });
+
+            // 7. RENDER ANIMATION TICK REFRESH ENGINE LOOP
             function frameUpdateEngine() {
                 requestAnimationFrame(frameUpdateEngine);
                 
-                // Keep looking closely at cursor movement changes to reposition vector matrix steps
-                navigationControls.update();
+                // Keep target camera locked directly looking onto origin point coordinates
+                camera.lookAt(0, 0, 0);
                 
-                // Flush the updated graphics pass onto the canvas view channel coordinates
                 renderer.render(scene, camera);
             }
             frameUpdateEngine();
 
-            // 8. CHROMEBOOK SCREEN DYNAMIC EXPANSION RESIZING UTILITY
+            // 8. DYNAMIC RESOLUTION SCALING
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
