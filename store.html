@@ -14,6 +14,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
         /* Navigational Header Bar */
@@ -24,12 +25,37 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .nav-left-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
 
         .nav-brand {
             font-size: 20px;
             font-weight: bold;
             color: #00c6ff;
+        }
+
+        /* The Custom Blue "Open Parts" Button */
+        .parts-toggle-btn {
+            background: #0072ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 114, 255, 0.3);
+            transition: background 0.2s;
+        }
+        .parts-toggle-btn:hover {
+            background: #0052d4;
         }
 
         .nav-links a {
@@ -51,6 +77,51 @@
             color: white;
         }
 
+        /* Slide-Out Black Parts Drawer Menu Panel */
+        .parts-sidebar-drawer {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: #000000; /* Solid pitch black background */
+            border-right: 2px solid #222222;
+            z-index: 99; /* Higher layer priority so it sits cleanly on top of store items */
+            transition: left 0.3s ease-in-out;
+            padding: 90px 20px 20px 20px;
+            box-sizing: border-box;
+            box-shadow: 5px 0 25px rgba(0,0,0,0.8);
+        }
+        .parts-sidebar-drawer.open {
+            left: 0;
+        }
+
+        .parts-sidebar-drawer h3 {
+            margin: 0 0 15px 0;
+            border-bottom: 2px solid #2d2d44;
+            padding-bottom: 8px;
+            color: #00c6ff;
+            font-size: 18px;
+        }
+
+        .purchased-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            max-height: calc(100vh - 140px);
+        }
+
+        /* Purchased item tiny display tags inside the drawer */
+        .bought-item-tag {
+            background: #14151f;
+            border: 1px solid #2d2d44;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            border-left: 3px solid #00ff88;
+        }
+
         /* Storefront Superstore Catalog Grid Structure Layout */
         .store-viewport {
             flex-grow: 1;
@@ -59,6 +130,8 @@
             margin: 0 auto;
             width: 100%;
             box-sizing: border-box;
+            position: relative;
+            z-index: 1;
         }
 
         .store-header {
@@ -130,13 +203,24 @@
 
     <!-- Top Navigation Bar Layout -->
     <nav class="game-navbar">
-        <div class="nav-brand">🖥️ PC SIMULATOR</div>
+        <div class="nav-left-group">
+            <div class="nav-brand">🖥️ PC SIMULATOR</div>
+            <!-- Open Parts Toggle Trigger Button -->
+            <button class="parts-toggle-btn" onclick="togglePartsDrawer()">📦 Open Parts</button>
+        </div>
         <div class="nav-links">
-            <!-- Links back to index.html home workspace file -->
             <a href="index.html">Home Base</a>
             <a href="store.html" class="active">Hardware Shop</a>
         </div>
     </nav>
+
+    <!-- Slide-Out Black Parts Drawer -->
+    <div class="parts-sidebar-drawer" id="partsDrawer">
+        <h3>📦 Collected Parts</h3>
+        <div class="purchased-items-list" id="drawer-items-list">
+            <p style="color: #555; font-size: 13px;">No items purchased yet.</p>
+        </div>
+    </div>
 
     <!-- Main Marketplace Display Content Canvas Area -->
     <div class="store-viewport">
@@ -176,18 +260,48 @@
             targetGrid.appendChild(layoutCard);
         });
 
+        // Initialize and fill the slide drawer on page startup
+        window.onload = function() {
+            updateDrawerDisplay();
+        };
+
+        // Slide animation logic control utility
+        function togglePartsDrawer() {
+            document.getElementById('partsDrawer').classList.toggle('open');
+        }
+
         function executeBuyOrder(name) {
-            // Retrieve current database profiles saved array tracking inventory
             let currentInv = JSON.parse(localStorage.getItem('pc_simulator_inventory')) || [];
             
             if(!currentInv.includes(name)){
                 currentInv.push(name);
             }
             
-            // Save data pack back safely into browser cache storage profile memory
             localStorage.setItem('pc_simulator_inventory', JSON.stringify(currentInv));
             
-            alert(`📦 Part Purchased: [ ${name} ] has been shipped to Home Base! Click 'Home Base' in the menu to check your rig build profile.`);
+            // Refresh the drawer items real-time upon clicking buy
+            updateDrawerDisplay();
+            
+            alert(`📦 Part Purchased: [ ${name} ] has been shipped to Home Base! Open the 'Open Parts' tray to see it.`);
+        }
+
+        // Logic function to dynamically render storage items inside the slide box
+        function updateDrawerDisplay() {
+            const listContainer = document.getElementById('drawer-items-list');
+            const savedItems = JSON.parse(localStorage.getItem('pc_simulator_inventory')) || [];
+
+            if (savedItems.length === 0) {
+                listContainer.innerHTML = `<p style="color: #555; font-size: 13px;">No items purchased yet.</p>`;
+                return;
+            }
+
+            listContainer.innerHTML = ""; // Clear default placeholders
+            savedItems.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'bought-item-tag';
+                itemDiv.innerHTML = `<strong>${item}</strong>`;
+                listContainer.appendChild(itemDiv);
+            });
         }
     </script>
 
