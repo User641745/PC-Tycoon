@@ -9,7 +9,7 @@
         canvas { display: block; width: 100vw; height: 100vh; cursor: grab; }
         canvas:active { cursor: grabbing; }
 
-        /* Blue Menu Toggle button locked to the absolute top layer */
+        /* The Custom Blue Menu Toggle button */
         .menu-toggle-btn {
             position: absolute; top: 20px; left: 20px; 
             z-index: 999;
@@ -19,7 +19,7 @@
         }
         .menu-toggle-btn:hover { background: #0052d4; }
 
-        /* The Main Solid Black Side Menu Panel Drawer */
+        /* Slide-Out Black Menu Container Drawer */
         .side-menu-drawer {
             position: absolute; top: 0; left: -260px; width: 260px; height: 100vh;
             background: #000000; border-right: 2px solid #222222; 
@@ -37,31 +37,37 @@
         }
         .drawer-btn:hover { background: #e0e0e0; }
 
-        /* The Parts List box display area container */
+        /* The Parts Display Drawer Area */
         .parts-display-box {
-            display: none; background: #111116; border: 1px solid #222233;
+            display: none; background: #0f1015; border: 1px solid #222233;
             border-radius: 6px; padding: 10px; margin-top: 5px;
-            max-height: 250px; overflow-y: auto; flex-direction: column; gap: 10px;
+            max-height: 350px; overflow-y: auto; flex-direction: column; gap: 12px;
         }
         .parts-display-box.show { display: flex; }
 
-        /* Draggable visual part tiles inside the menu drawer */
-        .part-draggable-card {
-            background: #0072ff; color: #ffffff; padding: 10px;
-            font-size: 12px; font-weight: bold; border-radius: 6px;
-            cursor: move; text-align: center; user-select: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            border: 1px solid #00c6ff;
+        /* MATCHING STYLE FROM IMAGE: Green-accented Draggable Hardware Component Cards */
+        .bought-item-tag {
+            background: #14151f;
+            border: 1px solid #2d2d44;
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #ffffff;
+            border-left: 4px solid #00ff88; /* The signature green indicator strip */
+            cursor: grab; /* Shows hand grab shape when hovering over parts */
+            user-select: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
-        .part-draggable-card:active { opacity: 0.6; }
+        .bought-item-tag:active { cursor: grabbing; opacity: 0.5; }
 
-        /* Glowing HUD overlay feedback notifications block */
+        /* HUD Overlay Feedback Banner */
         .hud-status-banner {
             position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.8); border: 1px solid #00ff88; color: #00ff88;
-            padding: 10px 24px; border-radius: 20px; font-size: 13px; font-weight: bold;
+            background: rgba(0,0,0,0.85); border: 1px solid #00ff88; color: #00ff88;
+            padding: 12px 28px; border-radius: 20px; font-size: 14px; font-weight: bold;
             display: none; z-index: 10; pointer-events: none;
-            box-shadow: 0 0 15px rgba(0,255,136,0.3);
+            box-shadow: 0 0 20px rgba(0,255,136,0.3);
         }
     </style>
 </head>
@@ -74,18 +80,16 @@
         <button class="drawer-btn" onclick="togglePartsList()">📦 Parts</button>
         
         <div class="parts-display-box" id="partsDisplay">
-            <!-- This starts completely empty as requested if nothing has been bought! -->
-            <p id="empty-hint" style="color: #555; font-size: 12px; text-align: center; margin: 5px 0;">Your inventory is empty. Go to the store browser to buy parts!</p>
+            <!-- Completely empty at start until parts are bought from the shop -->
+            <p id="empty-hint" style="color: #555; font-size: 12px; text-align: center; margin: 5px 0;">No parts found. Go to the store browser to buy parts!</p>
         </div>
     </div>
 
-    <!-- Live notifications status feed -->
     <div class="hud-status-banner" id="hudBanner"></div>
 
     <canvas id="c"></canvas>
     
     <script>
-        // Track whether any hardware item has been successfully snapped inside the cube core
         let installedComponentsList = [];
 
         function toggleSideMenu() {
@@ -100,28 +104,28 @@
             }
         }
 
-        // 1. DYNAMICALLY READ AND RENDER PURCHASED PARTS
+        // 1. DYNAMIC DATA HARVESTER READING REAL-TIME SHOP PURCHASES
         function renderInventoryList() {
             const containerBox = document.getElementById('partsDisplay');
-            // Pulls live data cache arrays from store page purchases
+            // Reads the shared browser save cache profile updated by store.html
             const inventoryData = JSON.parse(localStorage.getItem('pc_simulator_inventory')) || [];
             
-            // Filter out items that have already been installed inside the cube geometry
-            const spendableItems = inventoryData.filter(part => !installedComponentsList.includes(part));
+            // Exclude items that are already installed inside the cube framework
+            const availableItems = inventoryData.filter(part => !installedComponentsList.includes(part));
 
-            if(spendableItems.length === 0) {
-                containerBox.innerHTML = `<p style="color: #555; font-size: 12px; text-align: center; margin: 5px 0;">Your inventory is empty. Go to the store browser to buy parts!</p>`;
+            if(availableItems.length === 0) {
+                containerBox.innerHTML = `<p style="color: #555; font-size: 12px; text-align: center; margin: 5px 0;">No parts found. Go to the store browser to buy parts!</p>`;
                 return;
             }
             
-            containerBox.innerHTML = ""; // Wipe default tracking placeholders
+            containerBox.innerHTML = ""; // Flush default status placeholders
             
-            spendableItems.forEach(item => {
+            availableItems.forEach(item => {
                 const partCard = document.createElement('div');
-                partCard.className = 'part-draggable-card';
+                partCard.className = 'bought-item-tag'; // Matches style from image configuration
                 partCard.innerText = item;
                 
-                // Attach Native Drag HTML5 properties to the part tile element box mesh
+                // UNLOCKS TRUE DRAG AND DROP CAPABILITIES:
                 partCard.draggable = true;
                 partCard.addEventListener('dragstart', (e) => {
                     e.dataTransfer.setData('text/plain', item);
@@ -131,55 +135,48 @@
             });
         }
 
-        // --- CONFIGURE 3D CANVAS TARGET DROP LISTENERS BOUNDS ---
+        // --- CONFIGURE CANVAS DRAG AND DROP DETECTION AREAS ---
         const canvasElement = document.getElementById('c');
 
         canvasElement.addEventListener('dragover', (e) => {
-            e.preventDefault(); // Required line to allow dropping items onto a canvas matrix
+            e.preventDefault(); // Unlocks dropping permissions across standard browser bounds
         });
 
         canvasElement.addEventListener('drop', (e) => {
             e.preventDefault();
             const droppedPartName = e.dataTransfer.getData('text/plain');
-            
             if (!droppedPartName) return;
 
-            // Trigger the installation and snap routine logic handler
+            // Trigger structural distance placement calculation check routines
             executeInstallation(droppedPartName, e.clientX, e.clientY);
         });
 
         function executeInstallation(partName, mouseX, mouseY) {
-            // Check if the coordinates drop zone falls close to the center screen 3D block
             const centerX = w / 2;
             const centerY = h / 2;
             const dragDistanceToCube = Math.hypot(mouseX - centerX, mouseY - centerY);
 
-            if (dragDistanceToCube < 130) { // Snaps if item is dropped near the cube perimeter radius bounds
+            if (dragDistanceToCube < 130) { // Snaps item if dropped near the center 3D block bounds
                 installedComponentsList.push(partName);
                 
-                // Show a successful installation hud banner notification
                 const banner = document.getElementById('hudBanner');
-                banner.innerText = `⚙️ Component Installed: [ ${partName} ] locked inside the Core Rig Block!`;
+                banner.innerText = `🎉 Successfully Installed: [ ${partName} ] locked into the Core Rig Block!`;
                 banner.style.display = 'block';
                 
-                // Auto-refresh the drawer array list elements to remove the spent item instantly
-                renderInventoryList();
-                
-                // Close the menu bar cleanly to show the upgraded block
-                document.getElementById('sideMenu').classList.remove('open');
+                renderInventoryList(); // Re-index list to clear the spent tag instantly
+                document.getElementById('sideMenu').classList.remove('open'); // Close panel
 
                 setTimeout(() => { banner.style.display = 'none'; }, 4000);
             } else {
-                alert("⚠️ Drop Missed! Drag the component tile and drop it directly onto the center 3D block structure!");
+                alert("⚠️ Drop Missed! Make sure to drop the part directly on top of the central 3D cube block!");
             }
         }
 
-        // --- 2. THE 3D ENGINE GRAPHICS MECHANICS PANEL ---
+        // --- 2. PURE 3D ENGINE GRAPHICS DRAW PIPELINE ---
         const ctx = c.getContext('2d');
         let w = c.width = window.innerWidth, h = c.height = window.innerHeight;
         window.onresize = () => { w = c.width = window.innerWidth; h = c.height = window.innerHeight; };
 
-        // 3D Cube Structural Corner Vector Mapping Profile
         const pts = [
             {x:-80, y:-80, z:-80}, {x:80, y:-80, z:-80}, {x:80, y:80, z:-80}, {x:-80, y:80, z:-80},
             {x:-80, y:-80, z:80},  {x:80, y:-80, z:80},  {x:80, y:80, z:80},  {x:-80, y:80, z:80}
@@ -187,10 +184,9 @@
         const faces = [,,,,,
         ];
 
-        // Camera Looking Orbit Rotational variables
         let rx = 0.5, ry = 0.6, drag = false, px = 0, py = 0;
         const start = e => { 
-            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.classList.contains('part-draggable-card')) return; 
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.classList.contains('bought-item-tag')) return; 
             drag = true; px = e.clientX || e.touches.clientX; py = e.clientY || e.touches.clientY; 
         };
         const move = e => {
@@ -202,7 +198,6 @@
         window.onmouseup = window.onmouseleave = window.ontouchend = () => drag = false;
         window.onmousemove = window.ontouchmove = move;
 
-        // Vector Render Refresh Engine Loop
         function draw() {
             ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, w, h);
             let cx = Math.cos(rx), sx = Math.sin(rx), cy = Math.cos(ry), sy = Math.sin(ry);
@@ -211,3 +206,11 @@
                 let x1 = p.x * cy - p.z * sy, z1 = p.x * sy + p.z * cy;
                 let y2 = p.y * cx - z1 * sx,  z2 = p.y * sx + z1 * cx;
                 let ratio = 400 / (400 + z2);
+                return { x: w/2 + x1 * ratio, y: h/2 + y2 * ratio, z: z2 };
+            });
+
+            faces.map(f => {
+                let z = (screen[f].z + screen[f].z + screen[f].z + screen[f].z) / 4;
+                let area = (screen[f].x - screen[f].x) * (screen[f].y - screen[f].y) - (screen[f].y - screen[f].y) * (screen[f].x - screen[f].x);
+                return { f, z, show: area > 0 };
+            })
