@@ -3,191 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laptop Operating System</title>
+    <title>Desk Workspace</title>
     <style>
+        /* Main page setup */
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f1f3f4;
-            color: #202124;
-            display: flex;
-            flex-direction: column;
+            background: radial-gradient(circle at center, #2c3e50, #0f171e);
             height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Top ribbon window header bar offset panel spacing logic alignment */
-        .status-bar {
-            background-color: #202124;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Arial, sans-serif;
             color: #ffffff;
-            padding: 10px 20px 10px 50px; /* Offset spacing setup parameters to shield close button */
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            font-weight: bold;
-            user-select: none;
-        }
-
-        .browser-frame {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            background: #ffffff;
-            margin: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            border: 1px solid #dadce0;
             overflow: hidden;
         }
 
-        .address-bar-row {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #e8eaed;
-            padding: 10px 20px;
-            display: flex;
+        /* The Custom Solid Black Background Panel Container */
+        .workspace-panel {
+            background-color: #000000;
+            border: 2px solid #333333;
+            padding: 40px 60px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+            color: #ffffff;
+        }
+
+        /* The Custom Blue Button Configuration */
+        #open-browser-btn {
+            background: linear-gradient(135deg, #0052d4, #4364f7, #6fb1fc);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(67, 100, 247, 0.4);
+            transition: all 0.2s ease-in-out;
+        }
+
+        #open-browser-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(111, 177, 252, 0.6);
+        }
+
+        #open-browser-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Overlay frame to inject website.html securely into GitHub */
+        #laptop-screen-modal {
+            display: none; 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10;
+            justify-content: center;
             align-items: center;
         }
 
-        .url-box {
+        .modal-content-wrapper {
+            width: 90%;
+            height: 85%;
             background: #ffffff;
-            border: 1px solid #dadce0;
-            border-radius: 20px;
-            padding: 6px 15px;
-            font-size: 14px;
-            flex-grow: 1;
-            color: #5f6368;
-        }
-
-        .page-content {
-            flex-grow: 1;
-            padding: 25px;
-            overflow-y: auto;
-        }
-
-        .store-header {
-            border-bottom: 2px solid #1a73e8;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        .catalog-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 20px;
-        }
-
-        .item-card {
-            border: 1px solid #e8eaed;
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.2s;
+            overflow: hidden;
+            position: relative;
         }
 
-        .item-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.06);
-        }
-
-        .item-card h3 {
-            margin: 0 0 5px 0;
-            color: #1a0dab;
-            font-size: 16px;
-        }
-
-        .item-type {
-            font-size: 12px;
-            color: #70757a;
-            margin-bottom: 15px;
-        }
-
-        .item-price {
-            font-size: 22px;
-            font-weight: bold;
-            color: #202124;
-            margin-bottom: 15px;
-        }
-
-        .order-btn {
-            background-color: #1a73e8;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
+        #laptop-iframe {
             width: 100%;
+            height: 100%;
+            border: none;
         }
 
-        .order-btn:hover {
-            background-color: #1557b0;
+        .close-laptop-btn {
+            position: absolute;
+            top: 12px;
+            left: 15px;
+            background-color: #ff5f56;
+            border: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 20;
+        }
+        
+        .close-laptop-btn:hover {
+            background-color: #e04a41;
+        }
+
+        #inventory-cart {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #6fb1fc;
         }
     </style>
 </head>
 <body>
 
-    <div class="status-bar">
-        <span>💻 LaptopOS v5.0 (GitHub Active Session Layer)</span>
-        <span>Online 🌐</span>
+    <!-- Black Background Workspace Box -->
+    <div class="workspace-panel">
+        <h1>🖥️ SYSTEM COMMAND CENTER</h1>
+        
+        <!-- On-Button Script Trigger updated to "Open Browser" -->
+        <button id="open-browser-btn" onclick="openLaptopView()">Open Browser</button>
+        
+        <div id="inventory-cart">Parts Collected: None</div>
     </div>
 
-    <div class="browser-frame">
-        <div class="address-bar-row">
-            <div class="url-box">https://pcparts-supplier.net</div>
-        </div>
-
-        <div class="page-content">
-            <div class="store-header">
-                <h2>🛒 Global Rig Components Superstore</h2>
-                <p>Select any PC structural component below to request inventory supply distribution delivery.</p>
-            </div>
-
-            <div class="catalog-grid" id="catalog-display">
-                <!-- Components generated automatically -->
-            </div>
+    <!-- The Popup Browser Modal Interface -->
+    <div id="laptop-screen-modal">
+        <div class="modal-content-wrapper">
+            <button class="close-laptop-btn" onclick="closeLaptopView()"></button>
+            <iframe id="laptop-iframe" src=""></iframe>
         </div>
     </div>
 
     <script>
-        const componentsData = [
-            { name: "NVIDIA GeForce RTX 5090", price: "$1,999", type: "Graphics Processing Unit" },
-            { name: "AMD Ryzen 9 9950X CPU", price: "$649", type: "Central Processor Unit" },
-            { name: "Corsair Vengeance 64GB DDR5 RAM", price: "$229", type: "Memory Module" },
-            { name: "Samsung 990 PRO NVMe 2TB SSD", price: "$179", type: "Solid State Storage" },
-            { name: "ASUS ROG Thor 1200W Platinum PSU", price: "$310", type: "Power Delivery Unit" }
-        ];
-
-        const displayGrid = document.getElementById('catalog-display');
-        componentsData.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'item-card';
-            card.innerHTML = `
-                <div>
-                    <h3>${item.name}</h3>
-                    <div class="item-type">${item.type}</div>
-                </div>
-                <div>
-                    <div class="item-price">${item.price}</div>
-                    <button class="order-btn" onclick="checkout('${item.name}')">Order Component</button>
-                </div>
-            `;
-            displayGrid.appendChild(card);
-        });
-
-        function checkout(name) {
-            alert(`🎉 Success! [ ${name} ] has been shipped to your warehouse.`);
-            
-            // GitHub Feature: This broadcasts a communications data pack upward directly into laptop.html
-            window.parent.postMessage({
-                type: 'ITEM_PURCHASED',
-                itemName: name
-            }, '*');
+        function openLaptopView() {
+            document.getElementById('laptop-iframe').src = 'website.html';
+            document.getElementById('laptop-screen-modal').style.display = 'flex';
         }
+
+        function closeLaptopView() {
+            document.getElementById('laptop-screen-modal').style.display = 'none';
+            document.getElementById('laptop-iframe').src = '';
+        }
+
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'ITEM_PURCHASED') {
+                document.getElementById('inventory-cart').innerHTML = `📦 Latest Part Obtained: <strong>${event.data.itemName}</strong>`;
+            }
+        });
     </script>
 
 </body>
