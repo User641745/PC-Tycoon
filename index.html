@@ -3,50 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Viewport with Menu</title>
+    <title>3D Viewport with Fixed Menu</title>
     <style>
         body { margin: 0; background: #050508; overflow: hidden; height: 100vh; font-family: sans-serif; }
         canvas { display: block; width: 100vw; height: 100vh; cursor: grab; }
         canvas:active { cursor: grabbing; }
 
-        /* Menu Trigger Button style */
+        /* The Custom Blue Menu Toggle Button (Forced on top of everything) */
         .menu-toggle-btn {
-            position: absolute; top: 20px; left: 20px; z-index: 20;
-            background: #0072ff; color: white; border: none; padding: 10px 20px;
-            font-size: 14px; font-weight: bold; border-radius: 5px; cursor: pointer;
+            position: absolute; top: 20px; left: 20px; 
+            z-index: 999; /* Higher than the black side menu so it is never covered */
+            background: #0072ff; color: white; border: none; padding: 12px 24px;
+            font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 114, 255, 0.4);
+            transition: background 0.2s;
         }
+        .menu-toggle-btn:hover { background: #0052d4; }
 
-        /* Slide-Out Side Menu container drawer */
+        /* Slide-Out Black Side Menu Container Drawer */
         .side-menu-drawer {
-            position: absolute; top: 0; left: -250px; width: 250px; height: 100vh;
-            background: #0f1015; border-right: 1px solid #222533; z-index: 15;
-            transition: left 0.3s ease; padding: 80px 20px 20px 20px; box-sizing: border-box;
+            position: absolute; top: 0; left: -260px; width: 260px; height: 100vh;
+            background: #000000; /* Solid pitch black background */
+            border-right: 2px solid #222222; 
+            z-index: 50; /* Sits below the blue button */
+            transition: left 0.3s ease-in-out; 
+            padding: 90px 20px 20px 20px; /* Generous top padding keeps items clear of the button area */
+            box-sizing: border-box;
+            box-shadow: 5px 0 25px rgba(0,0,0,0.8);
         }
         .side-menu-drawer.open { left: 0; }
 
-        /* Internal Browser Button Style */
+        /* Internal White Browser Button style inside the drawer */
         .browser-link-btn {
-            background: #fff; color: #111; border: none; width: 100%; padding: 12px;
-            font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
+            background: #ffffff; color: #000000; border: none; width: 100%; padding: 12px;
+            font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer;
             text-align: center; text-decoration: none; display: block; box-sizing: border-box;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: background 0.2s;
         }
         .browser-link-btn:hover { background: #e0e0e0; }
     </style>
 </head>
 <body>
 
-    <!-- UI Interaction Elements -->
+    <!-- The Blue Button is separate and locked to the top layer -->
     <button class="menu-toggle-btn" onclick="toggleSideMenu()">☰ Menu</button>
     
+    <!-- The Black Side Menu Panel Drawer -->
     <div class="side-menu-drawer" id="sideMenu">
-        <!-- Links directly to the store website page he made earlier -->
         <a href="store.html" class="browser-link-btn">🌐 Browser</a>
     </div>
 
+    <!-- The 3D Engine Canvas Graphic Layer -->
     <canvas id="c"></canvas>
     
     <script>
-        // Menu toggle script logic
         function toggleSideMenu() {
             document.getElementById('sideMenu').classList.toggle('open');
         }
@@ -55,29 +66,31 @@
         let w = c.width = window.innerWidth, h = c.height = window.innerHeight;
         window.onresize = () => { w = c.width = window.innerWidth; h = c.height = window.innerHeight; };
 
-        // 3D Cube Corner Points & Face Setup
+        // 3D Cube Structural Corner Mapping
         const pts = [
             {x:-80, y:-80, z:-80}, {x:80, y:-80, z:-80}, {x:80, y:80, z:-80}, {x:-80, y:80, z:-80},
             {x:-80, y:-80, z:80},  {x:80, y:-80, z:80},  {x:80, y:80, z:80},  {x:-80, y:80, z:80}
         ];
-        const faces = [[0,1,2,3], [1,5,6,2], [4,5,6,7], [0,4,7,3], [0,1,5,4], [2,3,7,6]];
+        const faces = [, [1,5,6,2], [5,4,7,6], [4,0,3,7], [4,5,1,0], [3,2,6,7]
+        ];
 
-        // Drag Setup
+        // Cursor Axis Trackers Execution Logic
         let rx = 0.5, ry = 0.6, drag = false, px = 0, py = 0;
         const start = e => { 
-            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return; // Don't drag if clicking buttons
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return; 
             drag = true; px = e.clientX || e.touches.clientX; py = e.clientY || e.touches.clientY; 
         };
         const move = e => {
             if (!drag) return;
             let cx = e.clientX || e.touches.clientX, cy = e.clientY || e.touches.clientY;
-            ry += (cx - px) * 0.01; rx += (cy - py) * 0.01; px = cx; py = cy;
+            let dx = cx - px, dy = cy - py;
+            ry += dx * 0.01; rx += dy * 0.01; px = cx; py = cy;
         };
         window.onmousedown = window.ontouchstart = start;
         window.onmouseup = window.onmouseleave = window.ontouchend = () => drag = false;
         window.onmousemove = window.ontouchmove = move;
 
-        // Render Engine Loop
+        // Vector Render Refresh Engine Loop
         function draw() {
             ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, w, h);
             let cx = Math.cos(rx), sx = Math.sin(rx), cy = Math.cos(ry), sy = Math.sin(ry);
