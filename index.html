@@ -1,12 +1,118 @@
-const blockGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Orbit Viewport Simulator</title>
+    <style>
+        /* Full-screen dark immersive workspace with no text clutter */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050508;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-const blockMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff, 
-    roughness: 0.3
-});
+        /* The canvas render viewport container box */
+        #render-container {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
 
-const whiteBlockMesh = new THREE.Mesh(blockGeometry, blockMaterial);
-scene.add(whiteBlockMesh);
+        #render-container:active {
+            cursor: grabbing;
+        }
+    </style>
+    <!-- Secure, matching double-quote links to inject the Three.js 3D engine onto his Chromebook -->
+    <script src="https://cloudflare.com"></script>
+    <!-- OrbitControls extension script to compute camera angles dynamically based on cursor movement -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body>
 
-const draggableObjects = [whiteBlockMesh];
-const dragControls = new THREE.DragControls(draggableObjects, camera, renderer.domElement);
+    <div id="render-container"></div>
+
+    <script>
+        // Start engine calculations cleanly once document parsing cycles finish
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof THREE !== 'undefined' && typeof THREE.OrbitControls !== 'undefined') {
+                init3DOrbitEngine();
+            }
+        });
+
+        function init3DOrbitEngine() {
+            const container = document.getElementById('render-container');
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x050508);
+
+            // 1. DYNAMIC PERSPECTIVE CAMERA MATRIX 
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(3, 3, 4); // Position the camera offset at a downward viewing angle
+
+            // 2. WebGL GRAPHICS RENDERING PIPELINE
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimized resolution mapping for Chromebooks
+            container.appendChild(renderer.domElement);
+
+            // 3. 360° ORBIT CONTROLS RADAR INTERFACE
+            const navigationControls = new THREE.OrbitControls(camera, renderer.domElement);
+            navigationControls.enableDamping = true; // Adds realistic tracking weight momentum to camera drags
+            navigationControls.dampingFactor = 0.05;
+            navigationControls.minDistance = 1.5;   // Limit how far you can zoom inward
+            navigationControls.maxDistance = 12;    // Limit how far back camera tracking bounds can pass out
+
+            // 4. WORKSPACE PLATFORM GRID FLOOR ALIGNMENT MESH
+            const gridFloorHelper = new THREE.GridHelper(20, 20, 0x444444, 0x1f2330);
+            gridFloorHelper.position.y = -0.75; // Positioned flush against the bottom face of the block
+            scene.add(gridFloorHelper);
+
+            // 5. STAGE ILLUMINATION SYSTEM LIGHT CODES
+            const keyDirectionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            keyDirectionalLight.position.set(5, 8, 5);
+            scene.add(keyDirectionalLight);
+
+            const fillDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            fillDirectionalLight.position.set(-5, 4, -5);
+            scene.add(fillDirectionalLight);
+
+            const ambientCoreBaseLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientCoreBaseLight);
+
+            // 6. SPAWN THE MAIN TARGET 3D SYSTEM CUBE BLOCK
+            const structuralBoxGeo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+            const blockMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff, // Pure solid white profile paint finish
+                roughness: 0.2,  // Matte finish that dynamically catches shadows
+                metalness: 0.1
+            });
+            const mainTargetBlockMesh = new THREE.Mesh(structuralBoxGeo, blockMaterial);
+            scene.add(mainTargetBlockMesh);
+
+            // 7. ANIMATION RENDERING INTERVAL LOOP ENGINE
+            function frameUpdateEngine() {
+                requestAnimationFrame(frameUpdateEngine);
+                
+                // Keep looking closely at cursor movement changes to reposition vector matrix steps
+                navigationControls.update();
+                
+                // Flush the updated graphics pass onto the canvas view channel coordinates
+                renderer.render(scene, camera);
+            }
+            frameUpdateEngine();
+
+            // 8. CHROMEBOOK SCREEN DYNAMIC EXPANSION RESIZING UTILITY
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+    </script>
+</body>
+</html>
