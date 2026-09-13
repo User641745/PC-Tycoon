@@ -3,16 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Viewport</title>
+    <title>3D Viewport with Menu</title>
     <style>
-        body { margin: 0; background: #050508; overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        body { margin: 0; background: #050508; overflow: hidden; height: 100vh; font-family: sans-serif; }
         canvas { display: block; width: 100vw; height: 100vh; cursor: grab; }
         canvas:active { cursor: grabbing; }
+
+        /* Menu Trigger Button style */
+        .menu-toggle-btn {
+            position: absolute; top: 20px; left: 20px; z-index: 20;
+            background: #0072ff; color: white; border: none; padding: 10px 20px;
+            font-size: 14px; font-weight: bold; border-radius: 5px; cursor: pointer;
+        }
+
+        /* Slide-Out Side Menu container drawer */
+        .side-menu-drawer {
+            position: absolute; top: 0; left: -250px; width: 250px; height: 100vh;
+            background: #0f1015; border-right: 1px solid #222533; z-index: 15;
+            transition: left 0.3s ease; padding: 80px 20px 20px 20px; box-sizing: border-box;
+        }
+        .side-menu-drawer.open { left: 0; }
+
+        /* Internal Browser Button Style */
+        .browser-link-btn {
+            background: #fff; color: #111; border: none; width: 100%; padding: 12px;
+            font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer;
+            text-align: center; text-decoration: none; display: block; box-sizing: border-box;
+        }
+        .browser-link-btn:hover { background: #e0e0e0; }
     </style>
 </head>
 <body>
+
+    <!-- UI Interaction Elements -->
+    <button class="menu-toggle-btn" onclick="toggleSideMenu()">☰ Menu</button>
+    
+    <div class="side-menu-drawer" id="sideMenu">
+        <!-- Links directly to the store website page he made earlier -->
+        <a href="store.html" class="browser-link-btn">🌐 Browser</a>
+    </div>
+
     <canvas id="c"></canvas>
+    
     <script>
+        // Menu toggle script logic
+        function toggleSideMenu() {
+            document.getElementById('sideMenu').classList.toggle('open');
+        }
+
         const c = document.getElementById('c'), ctx = c.getContext('2d');
         let w = c.width = window.innerWidth, h = c.height = window.innerHeight;
         window.onresize = () => { w = c.width = window.innerWidth; h = c.height = window.innerHeight; };
@@ -26,10 +64,13 @@
 
         // Drag Setup
         let rx = 0.5, ry = 0.6, drag = false, px = 0, py = 0;
-        const start = e => { drag = true; px = e.clientX || e.touches[0].clientX; py = e.clientY || e.touches[0].clientY; };
+        const start = e => { 
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return; // Don't drag if clicking buttons
+            drag = true; px = e.clientX || e.touches.clientX; py = e.clientY || e.touches.clientY; 
+        };
         const move = e => {
             if (!drag) return;
-            let cx = e.clientX || e.touches[0].clientX, cy = e.clientY || e.touches[0].clientY;
+            let cx = e.clientX || e.touches.clientX, cy = e.clientY || e.touches.clientY;
             ry += (cx - px) * 0.01; rx += (cy - py) * 0.01; px = cx; py = cy;
         };
         window.onmousedown = window.ontouchstart = start;
@@ -41,7 +82,6 @@
             ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, w, h);
             let cx = Math.cos(rx), sx = Math.sin(rx), cy = Math.cos(ry), sy = Math.sin(ry);
             
-            // 3D Math to Screen Position Translation
             let screen = pts.map(p => {
                 let x1 = p.x * cy - p.z * sy, z1 = p.x * sy + p.z * cy;
                 let y2 = p.y * cx - z1 * sx,  z2 = p.y * sx + z1 * cx;
@@ -49,7 +89,6 @@
                 return { x: w/2 + x1 * ratio, y: h/2 + y2 * ratio, z: z2 };
             });
 
-            // Calculate Depth & Draw Face Surfaces
             faces.map(f => {
                 let z = (screen[f[0]].z + screen[f[1]].z + screen[f[2]].z + screen[f[3]].z) / 4;
                 let area = (screen[f[1]].x - screen[f[0]].x) * (screen[f[2]].y - screen[f[1]].y) - (screen[f[1]].y - screen[f[0]].y) * (screen[f[2]].x - screen[f[1]].x);
@@ -60,7 +99,6 @@
                 f.f.forEach(i => ctx.lineTo(screen[i].x, screen[i].y));
                 ctx.closePath();
                 
-                // Add 3D shading based on tilt angle
                 let bright = Math.floor(180 + 75 * Math.abs(Math.cos(rx)));
                 ctx.fillStyle = `rgb(${bright}, ${bright}, ${bright})`; ctx.fill();
                 ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
