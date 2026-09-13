@@ -3,198 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Vector Space Simulator</title>
+    <title>3D Viewport</title>
     <style>
-        /* Immersive laboratory workspace framework setup */
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #050508;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            user-select: none;
-        }
-
-        /* Responsive application engine canvas container element */
-        #canvas3d {
-            width: 100vw;
-            height: 100vh;
-            display: block;
-            cursor: grab;
-        }
-
-        #canvas3d:active {
-            cursor: grabbing;
-        }
+        body { margin: 0; background: #050508; overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        canvas { display: block; width: 100vw; height: 100vh; cursor: grab; }
+        canvas:active { cursor: grabbing; }
     </style>
 </head>
 <body>
-
-    <!-- Render viewport engine board element -->
-    <canvas id="canvas3d"></canvas>
-
+    <canvas id="c"></canvas>
     <script>
-        const canvas = document.getElementById('canvas3d');
-        const ctx = canvas.getContext('2d');
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+        let w = c.width = window.innerWidth, h = c.height = window.innerHeight;
+        window.onresize = () => { w = c.width = window.innerWidth; h = c.height = window.innerHeight; };
 
-        // Dynamic resizing engine matching Chromebook device width resolution bounds
-        function resizeMatrixCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeMatrixCanvas);
-        resizeMatrixCanvas();
-
-        // 1. CHASSIS RIGID BODY STRUCTURAL VERTEX BLUEPRINT DATA MATRIX (8 corners of a cube)
-        const blockVertices = [
-            { x: -100, y: -100, z: -100 }, // Vertex 0
-            { x:  100, y: -100, z: -100 }, // Vertex 1
-            { x:  100, y:  100, z: -100 }, // Vertex 2
-            { x: -100, y:  100, z: -100 }, // Vertex 3
-            { x: -100, y: -100, z:  100 }, // Vertex 4
-            { x:  100, y: -100, z:  100 }, // Vertex 5
-            { x:  100, y:  100, z:  100 }, // Vertex 6
-            { x: -100, y:  100, z:  100 }  // Vertex 7
+        // 3D Cube Corner Points & Face Setup
+        const pts = [
+            {x:-80, y:-80, z:-80}, {x:80, y:-80, z:-80}, {x:80, y:80, z:-80}, {x:-80, y:80, z:-80},
+            {x:-80, y:-80, z:80},  {x:80, y:-80, z:80},  {x:80, y:80, z:80},  {x:-80, y:80, z:80}
         ];
+        const faces = [[0,1,2,3], [1,5,6,2], [4,5,6,7], [0,4,7,3], [0,1,5,4], [2,3,7,6]];
 
-        // Structural connection maps defining the 6 square sides faces arrays profiles
-        const blockFacesIndex = [
-            { v:, normal: { x: 0, y: 0, z: -1 } }, // Back face
-            { v:, normal: { x: 1, y: 0, z: 0 } },  // Right face
-            { v:, normal: { x: 0, y: 0, z: 1 } },  // Front face
-            { v:, normal: { x: -1, y: 0, z: 0 } }, // Left face
-            { v:, normal: { x: 0, y: -1, z: 0 } }, // Top face
-            { v:, normal: { x: 0, y: 1, z: 0 } }   // Bottom face
-        ];
+        // Drag Setup
+        let rx = 0.5, ry = 0.6, drag = false, px = 0, py = 0;
+        const start = e => { drag = true; px = e.clientX || e.touches[0].clientX; py = e.clientY || e.touches[0].clientY; };
+        const move = e => {
+            if (!drag) return;
+            let cx = e.clientX || e.touches[0].clientX, cy = e.clientY || e.touches[0].clientY;
+            ry += (cx - px) * 0.01; rx += (cy - py) * 0.01; px = cx; py = cy;
+        };
+        window.onmousedown = window.ontouchstart = start;
+        window.onmouseup = window.onmouseleave = window.ontouchend = () => drag = false;
+        window.onmousemove = window.ontouchmove = move;
 
-        // 2. COMPUTE MOVEMENT ROTATIONAL ANGLE STATE HOOKS TRACKERS
-        let currentRotationAngleX = 0.5; // Default viewing angular positions values
-        let currentRotationAngleY = 0.6; 
-
-        // 3. MOUSE INTERACTIVE LOOK-AROUND ORBIT MONITOR CONTROLS
-        let isClickDraggingMouse = false;
-        let previousCursorCoordinates = { x: 0, y: 0 };
-
-        window.addEventListener('mousedown', (e) => {
-            isClickDraggingMouse = true;
-            previousCursorCoordinates = { x: e.clientX, y: e.clientY };
-        });
-
-        window.addEventListener('mouseup', () => { isClickDraggingMouse = false; });
-        window.addEventListener('mouseleave', () => { isClickDraggingMouse = false; });
-
-        // Evaluates tracking changes drag sweeps coordinates vector metrics to update angles fields
-        window.addEventListener('mousemove', (e) => {
-            if (!isClickDraggingMouse) return;
-
-            const deltaMoveVectorX = e.clientX - previousCursorCoordinates.x;
-            const deltaMoveVectorY = e.clientY - previousCursorCoordinates.y;
-
-            // Maps drag actions directly onto coordinate angular steps variables coefficients
-            currentRotationAngleY += deltaMoveVectorX * 0.01; // Left / Right pan looking orientation
-            currentRotationAngleX += deltaMoveVectorY * 0.01; // Up / Down tilt looking orientation
-
-            previousCursorCoordinates = { x: e.clientX, y: e.clientY };
-        });
-
-        // Touch pad mobile device scaling listeners mappings for responsive handling
-        window.addEventListener('touchstart', (e) => {
-            isClickDraggingMouse = true;
-            previousCursorCoordinates = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        });
-        window.addEventListener('touchend', () => { isClickDraggingMouse = false; });
-        window.addEventListener('touchmove', (e) => {
-            if (!isClickDraggingMouse) return;
-            const deltaMoveVectorX = e.touches[0].clientX - previousCursorCoordinates.x;
-            const deltaMoveVectorY = e.touches[0].clientY - previousCursorCoordinates.y;
-            currentRotationAngleY += deltaMoveVectorX * 0.015;
-            currentRotationAngleX += deltaMoveVectorY * 0.015;
-            previousCursorCoordinates = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        });
-
-        // =========================================================
-        // 🔮 CORE GRAPHICS RENDERING MATRIX PROCESS PIPELINE ENGINE
-        // =========================================================
-        function drawFrameUpdateLoop() {
-            // Clear entire screen workspace canvas frame channel coordinates
-            ctx.fillStyle = '#050508';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            const originCenterX = canvas.width / 2;
-            const originCenterY = canvas.height / 2;
-
-            // A. Draw Perspective Ambient Workspace Floor Grid Matrix
-            ctx.strokeStyle = '#16192b';
-            ctx.lineWidth = 1;
-            for(let gridLine = -5; gridLine <= 5; gridLine++) {
-                // Background matrix geometry structural calculations coordinates projections 
-                let startPointX = originCenterX + (gridLine * 60);
-                ctx.beginPath();
-                ctx.moveTo(startPointX, originCenterY + 140);
-                ctx.lineTo(originCenterX + (gridLine * 150), canvas.height);
-                ctx.stroke();
-            }
-
-            // B. Run Coordinate Transform System Loops mapping 3D structures vectors data
-            let computedProjectedVertices = [];
+        // Render Engine Loop
+        function draw() {
+            ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, w, h);
+            let cx = Math.cos(rx), sx = Math.sin(rx), cy = Math.cos(ry), sy = Math.sin(ry);
             
-            const trigonometricCosX = Math.cos(currentRotationAngleX);
-            const trigonometricSinX = Math.sin(currentRotationAngleX);
-            const trigonometricCosY = Math.cos(currentRotationAngleY);
-            const trigonometricSinY = Math.sin(currentRotationAngleY);
-
-            blockVertices.forEach(v => {
-                // Rotate calculation passes sequence coordinate axis 1 (Y rotation - Looking Left/Right)
-                let rotatedX1 = v.x * trigonometricCosY - v.z * trigonometricSinY;
-                let rotatedZ1 = v.x * trigonometricSinY + v.z * trigonometricCosY;
-
-                // Rotate calculation passes sequence coordinate axis 2 (X rotation - Looking Up/Down)
-                let rotatedY2 = v.y * trigonometricCosX - rotatedZ1 * trigonometricSinX;
-                let rotatedZ2 = v.y * trigonometricSinX + rotatedZ1 * trigonometricCosX;
-
-                // 3D Perspective Focal Depth Ratio Divider Calculations (Simulates geometric perspective scaling)
-                const focalPerspectiveDistance = 400;
-                const visualScaleRatio = focalPerspectiveDistance / (focalPerspectiveDistance + rotatedZ2);
-                
-                let projectionScreenX = originCenterX + rotatedX1 * visualScaleRatio;
-                let projectionScreenY = originCenterY + rotatedY2 * visualScaleRatio;
-
-                computedProjectedVertices.push({ x: projectionScreenX, y: projectionScreenY, depthZ: rotatedZ2 });
+            // 3D Math to Screen Position Translation
+            let screen = pts.map(p => {
+                let x1 = p.x * cy - p.z * sy, z1 = p.x * sy + p.z * cy;
+                let y2 = p.y * cx - z1 * sx,  z2 = p.y * sx + z1 * cx;
+                let ratio = 400 / (400 + z2);
+                return { x: w/2 + x1 * ratio, y: h/2 + y2 * ratio, z: z2 };
             });
 
-            // C. Depth Sorting Algorithms (Ensures faces closest to camera overlap background structures safely)
-            let renderFacesStack = [];
-            blockFacesIndex.forEach(faceIndexProfile => {
-                const verticesList = faceIndexProfile.v;
-                // Calculate average depth metrics value settings profile parameters
-                let averageDepthDistanceZ = (computedProjectedVertices[verticesList[0]].depthZ + 
-                                             computedProjectedVertices[verticesList[1]].depthZ + 
-                                             computedProjectedVertices[verticesList[2]].depthZ + 
-                                             computedProjectedVertices[verticesList[3]].depthZ) / 4;
-
-                // Simple Vector Cross Product Surface Calculations (Back-face culling logic algorithm)
-                const pointA = computedProjectedVertices[verticesList[0]];
-                const pointB = computedProjectedVertices[verticesList[1]];
-                const pointC = computedProjectedVertices[verticesList[2]];
+            // Calculate Depth & Draw Face Surfaces
+            faces.map(f => {
+                let z = (screen[f[0]].z + screen[f[1]].z + screen[f[2]].z + screen[f[3]].z) / 4;
+                let area = (screen[f[1]].x - screen[f[0]].x) * (screen[f[2]].y - screen[f[1]].y) - (screen[f[1]].y - screen[f[0]].y) * (screen[f[2]].x - screen[f[1]].x);
+                return { f, z, show: area > 0 };
+            })
+            .filter(f => f.show).sort((a,b) => b.z - a.z).forEach(f => {
+                ctx.beginPath(); ctx.moveTo(screen[f.f[0]].x, screen[f.f[0]].y);
+                f.f.forEach(i => ctx.lineTo(screen[i].x, screen[i].y));
+                ctx.closePath();
                 
-                let surfaceVectorCrossValue = (pointB.x - pointA.x) * (pointC.y - pointB.y) - (pointB.y - pointA.y) * (pointC.x - pointB.x);
-
-                // If surface is facing towards the active camera grid vector point, push onto drawing stack
-                if (surfaceVectorCrossValue > 0) {
-                    renderFacesStack.push({ face: faceIndexProfile, depthZ: averageDepthDistanceZ });
-                }
+                // Add 3D shading based on tilt angle
+                let bright = Math.floor(180 + 75 * Math.abs(Math.cos(rx)));
+                ctx.fillStyle = `rgb(${bright}, ${bright}, ${bright})`; ctx.fill();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
             });
-
-            // Sort face stacking orders array metrics tracking index layer values positions
-            renderFacesStack.sort((faceA, faceB) => faceB.depthZ - faceA.depthZ);
-
-            // D. Draw Layer Faces blocks mapping shading matrices arrays
-            renderFacesStack.forEach(renderTarget => {
-                const activeIndices = renderTarget.face.v;
-                
-                ctx.beginPath();
-                ctx.moveTo(computedProjectedVertices[activeIndices[0]].x, computedProjectedVertices[activeIndices[0]].y);
-                for(let edgePoint = 1; edgePoint < 4; edgePoint++) {
+            requestAnimationFrame(draw);
+        }
+        draw();
+    </script>
+</body>
+</html>
