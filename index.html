@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Viewport Simulator</title>
     <style>
+        /* Immersive full-screen environment layout setup with no text */
         body {
             margin: 0;
             padding: 0;
-            background-color: #0b0c10;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #050508;
             overflow: hidden;
             height: 100vh;
             display: flex;
@@ -18,27 +17,7 @@
             align-items: center;
         }
 
-        .hud-overlay {
-            position: absolute;
-            top: 25px;
-            pointer-events: none;
-            text-align: center;
-            z-index: 10;
-        }
-
-        .hud-banner {
-            background: rgba(0, 0, 0, 0.85);
-            padding: 12px 28px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #00c6ff;
-            border: 1px solid rgba(0, 198, 255, 0.4);
-            box-shadow: 0 0 20px rgba(0, 198, 255, 0.3);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
+        /* 3D Engine Frame Viewport Box */
         #render-container {
             width: 100%;
             height: 100%;
@@ -49,103 +28,76 @@
             cursor: grabbing;
         }
     </style>
-    <!-- Fixed Library Links: Using matching, secure double quotes so the Chromebook accepts them -->
+    <!-- Imports Three.js engine mechanics -->
     <script src="https://cloudflare.com"></script>
+    <!-- Imports OrbitControls configuration matrix to handle camera navigation look arounds -->
     <script src="https://jsdelivr.net"></script>
 </head>
 <body>
 
-    <div class="hud-overlay">
-        <!-- The banner will update automatically once the 3D block spins up -->
-        <div class="hud-banner" id="status-text">⏳ Loading 3D Engine Modules...</div>
-    </div>
-
+    <!-- Render Port container box structure -->
     <div id="render-container"></div>
 
     <script>
-        // Safety Fallback Check: Makes sure the libraries downloaded properly
+        // Start engine once elements are loaded safely
         window.addEventListener('DOMContentLoaded', () => {
-            if (typeof THREE === 'undefined' || typeof THREE.OrbitControls === 'undefined') {
-                document.getElementById('status-text').innerHTML = "⚠️ Network Error: Could not download 3D files. Check internet connection!";
-                document.getElementById('status-text').style.color = "#ff5f56";
-                document.getElementById('status-text').style.borderColor = "#ff5f56";
-                return;
+            if (typeof THREE !== 'undefined' && typeof THREE.OrbitControls !== 'undefined') {
+                init3DEngine();
             }
-            
-            // If everything is safe, start the system
-            init3DEngine();
         });
 
         function init3DEngine() {
-            // Update the instructions banner instantly
-            document.getElementById('status-text').innerHTML = "🖱️ Click + Drag screen to rotate and view block";
-
             const container = document.getElementById('render-container');
             const scene = new THREE.Scene();
             
-            scene.background = new THREE.Color(0x0a0b10);
-            scene.fog = new THREE.FogExp2(0x0a0b10, 0.04);
+            scene.background = new THREE.Color(0x050508);
 
+            // Camera Setup
             const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(4, 3, 5);
+            camera.position.set(3, 3, 4);
 
+            // Renderer Setup
             const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
             container.appendChild(renderer.domElement);
 
+            // Navigation Mouse Look-Around Controls
             const navigationControls = new THREE.OrbitControls(camera, renderer.domElement);
             navigationControls.enableDamping = true;
             navigationControls.dampingFactor = 0.05;
-            navigationControls.minDistance = 2;
-            navigationControls.maxDistance = 15;
+            navigationControls.minDistance = 1.5;   
+            navigationControls.maxDistance = 12;  
 
-            const gridFloorHelper = new THREE.GridHelper(20, 20, 0x00c6ff, 0x1f2330);
-            gridFloorHelper.position.y = -1.5;
+            // Subtle Floor Grid Pattern
+            const gridFloorHelper = new THREE.GridHelper(20, 20, 0x444444, 0x1f2330);
+            gridFloorHelper.position.y = -1.2;
             scene.add(gridFloorHelper);
 
-            const keyDirectionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            // Lighting to make the white block crisp and visible from all angles
+            const keyDirectionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
             keyDirectionalLight.position.set(5, 8, 5);
-            keyDirectionalLight.castShadow = true;
             scene.add(keyDirectionalLight);
 
-            const neonFillBlueLight = new THREE.PointLight(0x0072ff, 1.5, 10);
-            neonFillBlueLight.position.set(-3, 2, -3);
-            scene.add(neonFillBlueLight);
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            fillLight.position.set(-5, 4, -5);
+            scene.add(fillLight);
 
-            const ambientCoreBaseLight = new THREE.AmbientLight(0x1a1a2e, 0.6);
+            const ambientCoreBaseLight = new THREE.AmbientLight(0xffffff, 0.4);
             scene.add(ambientCoreBaseLight);
 
-            const objectGroup = new THREE.Group();
-
-            // The Main 3D PC Box block
-            const structuralBoxGeo = new THREE.BoxGeometry(1.8, 2.4, 1.8);
-            const casingMaterialStyle = new THREE.MeshStandardMaterial({
-                color: 0x1a1c23,
-                roughness: 0.4,
-                metalness: 0.8
+            // --- CREATE THE WHITE 3D BLOCK ---
+            const structuralBoxGeo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+            const blockMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff, // Pure solid white color
+                roughness: 0.2,  // Slightly smooth finish
+                metalness: 0.1
             });
-            const customCaseRigBodyMesh = new THREE.Mesh(structuralBoxGeo, casingMaterialStyle);
-            customCaseRigBodyMesh.castShadow = true;
-            customCaseRigBodyMesh.receiveShadow = true;
-            objectGroup.add(customCaseRigBodyMesh);
+            const whiteBlockMesh = new THREE.Mesh(structuralBoxGeo, blockMaterial);
+            scene.add(whiteBlockMesh);
 
-            // Glowing Neon Green vertical edge trim lines
-            const stripGeometry = new THREE.BoxGeometry(0.1, 2.42, 0.1);
-            const customNeonMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
-            
-            const frontLeftStrip = new THREE.Mesh(stripGeometry, customNeonMaterial);
-            frontLeftStrip.position.set(0.91, 0, 0.91);
-            objectGroup.add(frontLeftStrip);
-
-            const frontRightStrip = new THREE.Mesh(stripGeometry, customNeonMaterial);
-            frontRightStrip.position.set(-0.91, 0, 0.91);
-            objectGroup.add(frontRightStrip);
-
-            scene.add(objectGroup);
-
-            // Render loop cycle execution engine
+            // Dynamic Animation Frame Render Loop
             function frameUpdateEngine() {
                 requestAnimationFrame(frameUpdateEngine);
                 navigationControls.update();
@@ -154,6 +106,7 @@
 
             frameUpdateEngine();
 
+            // Handle Screen Resizing on the Chromebook
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
