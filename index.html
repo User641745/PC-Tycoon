@@ -3,284 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PC Assembly Workbench Simulator</title>
+    <title>3D Viewport Simulator</title>
     <style>
-        /* Immersive Gaming Background Workspace */
+        /* Immersive full-screen environment layout setup */
         body {
             margin: 0;
             padding: 0;
+            background-color: #0b0c10;
+            color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #12131a, #09090d);
-            color: white;
-            height: 100vh;
-            display: flex;
-            box-sizing: border-box;
             overflow: hidden;
-        }
-
-        /* Center Assembly Workbench Window Workspace */
-        .bench-view {
-            flex-grow: 2;
-            background: radial-gradient(circle, #1e2030 0%, #0d0e15 100%);
-            border-right: 2px solid #252736;
-            position: relative;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.9);
         }
 
-        .bench-instruction-banner {
+        /* Ambient HUD overlay container framework indicators */
+        .hud-overlay {
             position: absolute;
             top: 25px;
-            background: rgba(0,0,0,0.85);
-            padding: 10px 24px;
-            border-radius: 30px;
-            font-size: 15px;
-            font-weight: 500;
-            border: 1px solid #00c6ff;
-            color: #00c6ff;
-            box-shadow: 0 4px 15px rgba(0, 198, 255, 0.2);
+            pointer-events: none; /* Let control mouse coordinates pass safely straight into canvas */
+            text-align: center;
             z-index: 10;
         }
 
-        /* Interactive Moveable 2.5D Case Frame */
-        .pc-case-chassis {
-            width: 340px;
-            height: 420px;
-            background-color: #050508;
-            border: 4px solid #3a3d52;
-            border-radius: 12px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-        }
-
-        /* Internal Hardware Installation Plate Panel */
-        .motherboard-plate {
-            width: 260px;
-            height: 320px;
-            background-color: #143525;
-            border-radius: 8px;
-            position: relative;
-            opacity: 0.3;
-            transition: opacity 0.4s;
-            border: 1px solid #1f5239;
-        }
-
-        /* Component Case Metal Thumbscrews */
-        .case-screw {
-            width: 18px;
-            height: 18px;
-            background: radial-gradient(circle, #ffffff, #888888, #444444);
-            border: 1px solid #222;
-            border-radius: 50%;
-            position: absolute;
-            cursor: pointer;
-            z-index: 5;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.5);
-        }
-        .case-screw::after {
-            content: '';
-            position: absolute;
-            top: 8px; left: 3px; width: 12px; height: 2px;
-            background-color: #222;
-        }
-
-        .screw-tl { top: 15px; left: 15px; }
-        .screw-tr { top: 15px; right: 15px; }
-        .screw-bl { bottom: 15px; left: 15px; }
-        .screw-br { bottom: 15px; right: 15px; }
-
-        /* The Tinted Removable Exterior Window Overlay Glass */
-        .case-side-panel {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 198, 255, 0.12);
-            border-radius: 8px;
-            z-index: 4;
-            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 800;
+        .hud-banner {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 12px 28px;
+            border-radius: 30px;
             font-size: 14px;
-            letter-spacing: 2px;
-            color: rgba(255,255,255,0.5);
-            text-shadow: 0 2px 5px rgba(0,0,0,0.6);
-            pointer-events: none;
-        }
-
-        /* Motherboard Modular Hardware Target Slots */
-        .hardware-socket {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px dashed rgba(255,255,255,0.25);
-            border-radius: 4px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 10px;
-            color: rgba(255,255,255,0.4);
-            cursor: pointer;
             font-weight: bold;
-            text-align: center;
-            padding: 4px;
-            box-sizing: border-box;
-            transition: all 0.2s;
-        }
-        .hardware-socket:hover {
-            background: rgba(0, 198, 255, 0.15);
-            border-color: #00c6ff;
             color: #00c6ff;
-        }
-
-        .socket-cpu { top: 45px; left: 90px; width: 80px; height: 80px; }
-        .socket-ram { top: 45px; right: 25px; width: 25px; height: 110px; font-size: 9px; }
-        .socket-gpu { top: 165px; left: 25px; width: 210px; height: 65px; }
-
-        /* Installation state styles */
-        .component-installed {
-            background-color: #0a1c3a !important;
-            border: 2px solid #00ff88 !important;
-            color: #00ff88 !important;
-            box-shadow: 0 0 15px rgba(0,255,136,0.3);
-        }
-
-        /* Navigation Pan View Adjuster Mechanics Panel */
-        .view-angle-controls {
-            position: absolute;
-            bottom: 25px;
-            display: flex;
-            gap: 12px;
-            z-index: 6;
-        }
-        .angle-btn {
-            background: #1b1c26;
-            color: white;
-            border: 1px solid #33354a;
-            padding: 10px 20px;
-            font-size: 13px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.15s, border-color 0.15s;
-        }
-        .angle-btn:hover { 
-            background: #0072ff; 
-            border-color: #00c6ff;
-        }
-
-        /* Right Hand Inventory Utility Sidebar Deck Drawer */
-        .parts-sidebar-drawer {
-            width: 340px;
-            background-color: #08090d;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            user-select: none;
-            border-left: 1px solid #1a1b26;
-        }
-
-        .parts-sidebar-drawer h3 {
-            margin: 0 0 10px 0;
-            color: #00c6ff;
-            font-size: 18px;
-            letter-spacing: 0.5px;
-        }
-
-        /* Blue Open Store Shortcut Link Button Style */
-        .go-store-btn {
-            background: linear-gradient(135deg, #0072ff, #00c6ff);
-            color: white;
-            border: none;
-            padding: 12px;
-            font-size: 15px;
-            font-weight: bold;
+            border: 1px solid rgba(0, 198, 255, 0.4);
+            box-shadow: 0 0 20px rgba(0, 198, 255, 0.2);
+            letter-spacing: 1px;
             text-transform: uppercase;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0, 114, 255, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .go-store-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 6px 18px rgba(0, 198, 255, 0.5);
+        /* 3D Engine Frame Viewport Box Styling Profiles */
+        #render-container {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
         }
 
-        .inventory-list-shelf {
-            flex-grow: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .inventory-item-card {
-            background: #13141f;
-            border: 1px solid #27283b;
-            padding: 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
-        .inventory-item-card:hover {
-            background: #191a29;
-            border-color: #00c6ff;
-            transform: scale(1.02);
-        }
-        .inventory-item-card.selected {
-            border: 2px solid #00c6ff;
-            background: rgba(0, 198, 255, 0.08);
+        #render-container:active {
+            cursor: grabbing;
         }
     </style>
+    <!-- Imports Three.js engine mechanics directly to configure 3D variables smoothly on his Chromebook -->
+    <script src="https://cloudflare.com"></script>
+    <!-- Imports OrbitControls configuration matrix to handle camera navigation look arounds -->
+    <script src="https://jsdelivr.net"></script>
 </head>
 <body>
 
-    <!-- Main Game Workspace Field Screen Viewport -->
-    <div class="bench-view">
-        <div class="bench-instruction-banner" id="banner-hint">🔧 WORKBENCH STARTED: Click all 4 metal screws to unlock the side casing panel layer!</div>
-        
-        <!-- Interactive Chassis Object -->
-        <div class="pc-case-chassis" id="chassis-box" style="transform: rotate(0deg);">
-            
-            <!-- Protective glass sheet screen graphic layer node -->
-            <div class="case-side-panel" id="glass-wall">TEMPERED GLASS PANEL</div>
-            
-            <!-- Screws structural targets execution buttons -->
-            <div class="case-screw screw-tl" onclick="unscrew(this)"></div>
-            <div class="case-screw screw-tr" onclick="unscrew(this)"></div>
-            <div class="case-screw screw-bl" onclick="unscrew(this)"></div>
-            <div class="case-screw screw-br" onclick="unscrew(this)"></div>
-            
-            <!-- Circuit board slots base core layout tray area -->
-            <div class="motherboard-plate" id="mobo-tray">
-                <div class="hardware-socket socket-cpu" onclick="installComponent('CPU', this)">CPU SOCKET</div>
-                <div class="hardware-socket socket-ram" onclick="installComponent('RAM', this)">RAM SLOT 1</div>
-                <div class="hardware-socket socket-gpu" onclick="installComponent('GPU', this)">PCIe GPU MOUNT</div>
-            </div>
-
-        </div>
-
-        <!-- 3D Panning Looking Controls Matrix Interface -->
-        <div class="view-angle-controls">
-            <button class="angle-btn" onclick="rotateCase(-35)">🔄 Pan Left</button>
-            <button class="angle-btn" onclick="rotateCase(0)">Frontal View</button>
-            <button class="angle-btn" onclick="rotateCase(35)">Pan Right 🔄</button>
-        </div>
+    <!-- Instructions banner HUD module display -->
+    <div class="hud-overlay">
+        <div class="hud-banner">🖱️ Click + Drag mouse cursor around screen to rotate and view block</div>
     </div>
 
-    <!-- Active Parts Shelf Grid Panel Container System -->
-    <div class="parts-sidebar-drawer">
-        <h3>📦 Warehouse Storage</h3>
+    <!-- Active 3D Render Port container box structure -->
+    <div id="render-container"></div>
+
+    <script>
+        // --- 1. SETUP 3D VIEWPORT CONTAINER ENGINE CONTEXT ---
+        const container = document.getElementById('render-container');
+        const scene = new THREE.Scene();
         
-        <!-- Dynamic Clickable Route Navigation Button linking to store.html -->
+        // Setup depth matrix atmospheric field fog elements
+        scene.background = new THREE.Color(0x0a0b10);
+        scene.fog = new THREE.FogExp2(0x0a0b10, 0.04);
+
+        // --- 2. CAMERA COORDINATES MATRIX PARAMETERS ---
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(4, 3, 5); // Position camera offset array bounds looking downward at object angles
+
+        // --- 3. RENDERER ENGINE MECHANICS PIPELINE ---
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Dynamic responsive Chromebook scaling profile logic
+        renderer.shadowMap.enabled = true;
+        container.appendChild(renderer.domElement);
+
+        // --- 4. NAVIGATION LOOK-AROUND ENGINE CONTROLS ---
+        const navigationControls = new THREE.OrbitControls(camera, renderer.domElement);
+        navigationControls.enableDamping = true; // Adds smooth weight momentum to camera tracking pans
+        navigationControls.dampingFactor = 0.05;
+        navigationControls.minDistance = 2;   // Limit how close you can zoom inward
+        navigationControls.maxDistance = 15;  // Limit how far back camera tracking bounds can pass out
+
+        // --- 5. GRID MATRIX SPACE FLOOR STAGE MODULATION ---
+        const gridFloorHelper = new THREE.GridHelper(20, 20, 0x00c6ff, 0x1f2330);
+        gridFloorHelper.position.y = -1.5;
+        scene.add(gridFloorHelper);
+
+        // --- 6. ILLUMINATION LIGHT SOURCE LAYOUT COMPONENT RIGS ---
+        const keyDirectionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        keyDirectionalLight.position.set(5, 8, 5);
+        keyDirectionalLight.castShadow = true;
+        scene.add(keyDirectionalLight);
+
+        const neonFillBlueLight = new THREE.PointLight(0x0072ff, 1.5, 10);
+        neonFillBlueLight.position.set(-3, 2, -3);
+        scene.add(neonFillBlueLight);
+
+        const ambientCoreBaseLight = new THREE.AmbientLight(0x1a1a2e, 0.6);
+        scene.add(ambientCoreBaseLight);
+
+        // --- 7. CREATE INTERACTIVE 3D OBJECT SYSTEM BLOCKS (The Custom Case Rigid Body Frame) ---
+        const objectGroup = new THREE.Group();
+
+        // Layer A: Main computer tower structural frame box object dimension geometry vectors
+        const structuralBoxGeo = new THREE.BoxGeometry(1.8, 2.4, 1.8);
+        const casingMaterialStyle = new THREE.MeshStandardMaterial({
+            color: 0x1a1c23,
+            roughness: 0.4,
+            metalness: 0.8
+        });
+        const customCaseRigBodyMesh = new THREE.Mesh(structuralBoxGeo, casingMaterialStyle);
+        customCaseRigBodyMesh.castShadow = true;
+        customCaseRigBodyMesh.receiveShadow = true;
+        objectGroup.add(customCaseRigBodyMesh);
+
+        // Layer B: Visual Neon Accent Ribbon Strip Panels
+        const stripGeometry = new THREE.BoxGeometry(0.1, 2.42, 0.1);
+        const customNeonMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff88 }); // Bright neon green corner strips
+        
+        const frontLeftStrip = new THREE.Mesh(stripGeometry, customNeonMaterial);
+        frontLeftStrip.position.set(0.91, 0, 0.91);
+        objectGroup.add(frontLeftStrip);
+
+        const frontRightStrip = new THREE.Mesh(stripGeometry, customNeonMaterial);
+        frontRightStrip.position.set(-0.91, 0, 0.91);
+        objectGroup.add(frontRightStrip);
+
+        // Add final compiled components layout parameters directly into scene canvas space
+        scene.add(objectGroup);
+
+        // --- 8. DYNAMIC ANIMATION RENDER REFRESH ENGINE LOOP MECHANICS ---
+        function frameUpdateEngine() {
+            requestAnimationFrame(frameUpdateEngine);
+
+            // Automatically updates navigation calculations to match cursor dragging movements parameters values
+            navigationControls.update();
+
+            // Run active frame buffer pass cleanly onto screen vector grid coordinates channels
+            renderer.render(scene, camera);
+        }
+
+        // Trigger startup engine animation processes execution loop
+        frameUpdateEngine();
+
+        // --- 9. RESPONSIVE SCREEN RE-SIZING RESOLUTION UTILITIES HANDLING ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
