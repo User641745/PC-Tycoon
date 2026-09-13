@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate PC Simulator - Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #12121c);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Top Navigation Menu Bar */
+        .game-navbar {
+            background-color: #0f0f1a;
+            border-bottom: 2px solid #2d2d44;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .nav-brand {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00c6ff;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 20px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-links a.active {
+            background-color: #0072ff;
+            color: white;
+        }
+
+        /* Game Screen Layout Splits */
+        .game-container {
+            flex-grow: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            box-sizing: border-box;
+            height: calc(100vh - 60px);
+        }
+
+        /* Left Side: Assembly Workbench Desk Area */
+        .bench-view {
+            flex-grow: 2;
+            background: radial-gradient(circle, #25283d 0%, #161722 100%);
+            border: 2px solid #3d405b;
+            border-radius: 12px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        .bench-instruction-banner {
+            position: absolute;
+            top: 15px;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            border: 1px solid #00c6ff;
+            color: #00c6ff;
+        }
+
+        /* The Custom Modifiable PC Tower Chassis Object Graphics */
+        .pc-case-chassis {
+            width: 320px;
+            height: 400px;
+            background-color: #08080c;
+            border: 4px solid #484b6a;
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s ease-out; /* Smooth rotate panning visual effect */
+            cursor: grab;
+        }
+
+        /* Internal Component Placement Slots */
+        .motherboard-plate {
+            width: 240px;
+            height: 300px;
+            background-color: #1b4332; /* Circuit board green color */
+            border-radius: 6px;
+            position: relative;
+            opacity: 0.4; /* Dimmed down until side panel is removed */
+            transition: opacity 0.3s;
+        }
+
+        /* Interactive Mechanical Case Screws */
+        .case-screw {
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle, #e0e0e0, #757575);
+            border: 1px solid #424242;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            z-index: 5;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+        .case-screw::after {
+            content: '';
+            position: absolute;
+            top: 7px; left: 2px; width: 12px; height: 2px;
+            background-color: #333;
+        }
+
+        .screw-tl { top: 15px; left: 15px; }
+        .screw-tr { top: 15px; right: 15px; }
+        .screw-bl { bottom: 15px; left: 15px; }
+        .screw-br { bottom: 15px; right: 15px; }
+
+        /* Outside Removable Smoked Glass Panel Element Overlay */
+        .case-side-panel {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 198, 255, 0.15); /* Sleek translucent blue glow */
+            border-radius: 4px;
+            z-index: 4;
+            transition: all 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: rgba(255,255,255,0.7);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            pointer-events: none; /* Let clicks pass through onto screws */
+        }
+
+        /* Hardware Slots (GPU, CPU, RAM) */
+        .hardware-socket {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .hardware-socket:hover {
+            background: rgba(0, 198, 255, 0.2);
+            border-color: #00c6ff;
+            color: #00c6ff;
+        }
+
+        .socket-cpu { top: 40px; left: 85px; width: 70px; height: 70px; }
+        .socket-ram { top: 40px; right: 25px; width: 25px; height: 90px; }
+        .socket-gpu { top: 140px; left: 25px; width: 190px; height: 50px; }
+
+        /* Filled state for components loaded inside */
+        .component-installed {
+            background-color: #1d3557 !important;
+            border: 2px solid #00ff88 !important;
+            color: #00ff88 !important;
+            box-shadow: 0 0 10px rgba(0,255,136,0.4);
+        }
+
+        /* Right Side: Component Inventory Toolbar Palette Drawer */
+        .inventory-drawer {
+            width: 320px;
+            background-color: #0f0f1a;
+            border: 2px solid #2d2d44;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        .inventory-drawer h3 {
+            margin: 0 0 15px 0;
+            border-bottom: 2px solid #2d2d44;
+            padding-bottom: 8px;
+            color: #00c6ff;
+        }
+
+        .inventory-list-shelf {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .inventory-item-card {
+            background: #1e1e2f;
+            border: 1px solid #3d405b;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .inventory-item-card:hover {
+            background: #25253b;
+            border-color: #00c6ff;
+        }
+        .inventory-item-card.selected {
+            border: 2px solid #00c6ff;
+            background: rgba(0, 198, 255, 0.1);
+        }
+
+        /* Camera Rotation control pads buttons layout options */
+        .rotation-controls {
+            position: absolute;
+            bottom: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 6;
+        }
+        .rotate-btn {
+            background: #2d2d44;
+            color: white;
+            border: 1px solid #444;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .rotate-btn:hover { background: #0072ff; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation Section Link Connectors -->
+    <nav class="game-navbar">
+        <div class="nav-brand">🖥️ PC RIG SIMULATOR</div>
+        <div class="nav-links">
+            <a href="index.html" class="active">Assembly Bench</a>
+            <a href="store.html">Hardware Shop</a>
+        </div>
+    </nav>
+
+    <!-- Core Simulator Application Arena Layout -->
+    <div class="game-container">
+        
+        <!-- Center Workbench Layout Stage Canvas -->
+        <div class="bench-view">
+            <div class="bench-instruction-banner" id="banner-hint">🔧 Step 1: Click all 4 silver corner thumbscrews to unlock the casing!</div>
+            
+            <!-- Custom Case Tower Box Wrapper Block -->
+            <div class="pc-case-chassis" id="chassis-box" style="transform: rotate(0deg);">
+                
+                <!-- Removable side window shield glass overlay layer -->
+                <div class="case-side-panel" id="glass-wall">GLASS SIDE PANEL</div>
+                
+                <!-- Four clickable mechanical screw elements -->
+                <div class="case-screw screw-tl" onclick="unscrew(this)"></div>
+                <div class="case-screw screw-tr" onclick="unscrew(this)"></div>
+                <div class="case-screw screw-bl" onclick="unscrew(this)"></div>
+                <div class="case-screw screw-br" onclick="unscrew(this)"></div>
+                
+                <!-- Inner circuit board mounting grid plate canvas layout -->
+                <div class="motherboard-plate" id="mobo-tray">
+                    <!-- Drop targets to assemble structural gear objects onto rig profile -->
+                    <div class="hardware-socket socket-cpu" onclick="installComponent('CPU', this)">CPU SOCKET</div>
+                    <div class="hardware-socket socket-ram" onclick="installComponent('RAM', this)">RAM SLOT</div>
+                    <div class="hardware-socket socket-gpu" onclick="installComponent('GPU', this)">PCIe GPU SLOT</div>
+                </div>
+
+            </div>
+
