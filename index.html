@@ -34,7 +34,7 @@
         .bench-instruction-banner {
             position: absolute;
             top: 25px;
-            background: rgba(0,0,0,0.75);
+            background: rgba(0,0,0,0.85);
             padding: 10px 24px;
             border-radius: 30px;
             font-size: 15px;
@@ -56,7 +56,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); /* Panning animation engine */
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             box-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
 
@@ -64,10 +64,10 @@
         .motherboard-plate {
             width: 260px;
             height: 320px;
-            background-color: #143525; /* Classic printed circuit board layout green */
+            background-color: #143525;
             border-radius: 8px;
             position: relative;
-            opacity: 0.3; /* Lock state shading profile */
+            opacity: 0.3;
             transition: opacity 0.4s;
             border: 1px solid #1f5239;
         }
@@ -100,7 +100,7 @@
         .case-side-panel {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 198, 255, 0.12); /* Ambient LED glow refraction styling profile */
+            background: rgba(0, 198, 255, 0.12);
             border-radius: 8px;
             z-index: 4;
             transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
@@ -188,12 +188,33 @@
         }
 
         .parts-sidebar-drawer h3 {
-            margin: 0 0 20px 0;
-            border-bottom: 2px solid #1e1e2f;
-            padding-bottom: 10px;
+            margin: 0 0 10px 0;
             color: #00c6ff;
             font-size: 18px;
             letter-spacing: 0.5px;
+        }
+
+        /* Blue Open Store Shortcut Link Button Style */
+        .go-store-btn {
+            background: linear-gradient(135deg, #0072ff, #00c6ff);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 114, 255, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .go-store-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 18px rgba(0, 198, 255, 0.5);
         }
 
         .inventory-list-shelf {
@@ -260,19 +281,6 @@
 
     <!-- Active Parts Shelf Grid Panel Container System -->
     <div class="parts-sidebar-drawer">
-        <h3>📦 Inventory Warehouse</h3>
-        <div class="inventory-list-shelf" id="inv-shelf-display">
-            <!-- Simulated starting factory parts if memory store register is clear -->
-            <p style="color: #4a4c5a; font-size: 13px;">No store components detected. Loading default test parts bundle...</p>
-        </div>
-    </div>
-
-    <script>
-        let brokenScrewsCount = 0;
-        let isPanelRemoved = false;
-        let selectedHardwareType = null;
-
-        // Auto initialization load checks pulling from storage systems or default profiles
-        window.onload = function() {
-            let currentPartsList = JSON.parse(localStorage.getItem('pc_simulator_inventory')) || [];
-            
+        <h3>📦 Warehouse Storage</h3>
+        
+        <!-- Dynamic Clickable Route Navigation Button linking to store.html -->
