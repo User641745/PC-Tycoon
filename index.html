@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Viewport Simulator</title>
+    <title>3D Vector Space Simulator</title>
     <style>
-        /* Immersive full-screen background with no extra text variables */
+        /* Immersive laboratory workspace framework setup */
         body {
             margin: 0;
             padding: 0;
@@ -15,143 +15,186 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            user-select: none;
         }
 
-        #render-container {
-            width: 100%;
-            height: 100%;
+        /* Responsive application engine canvas container element */
+        #canvas3d {
+            width: 100vw;
+            height: 100vh;
+            display: block;
             cursor: grab;
         }
 
-        #render-container:active {
+        #canvas3d:active {
             cursor: grabbing;
         }
     </style>
-    <!-- We only pull the core Three.js framework; no extra control files needed -->
-    <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
-    <div id="render-container"></div>
+    <!-- Render viewport engine board element -->
+    <canvas id="canvas3d"></canvas>
 
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            if (typeof THREE !== 'undefined') {
-                initCustom3DEngine();
-            }
+        const canvas = document.getElementById('canvas3d');
+        const ctx = canvas.getContext('2d');
+
+        // Dynamic resizing engine matching Chromebook device width resolution bounds
+        function resizeMatrixCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeMatrixCanvas);
+        resizeMatrixCanvas();
+
+        // 1. CHASSIS RIGID BODY STRUCTURAL VERTEX BLUEPRINT DATA MATRIX (8 corners of a cube)
+        const blockVertices = [
+            { x: -100, y: -100, z: -100 }, // Vertex 0
+            { x:  100, y: -100, z: -100 }, // Vertex 1
+            { x:  100, y:  100, z: -100 }, // Vertex 2
+            { x: -100, y:  100, z: -100 }, // Vertex 3
+            { x: -100, y: -100, z:  100 }, // Vertex 4
+            { x:  100, y: -100, z:  100 }, // Vertex 5
+            { x:  100, y:  100, z:  100 }, // Vertex 6
+            { x: -100, y:  100, z:  100 }  // Vertex 7
+        ];
+
+        // Structural connection maps defining the 6 square sides faces arrays profiles
+        const blockFacesIndex = [
+            { v:, normal: { x: 0, y: 0, z: -1 } }, // Back face
+            { v:, normal: { x: 1, y: 0, z: 0 } },  // Right face
+            { v:, normal: { x: 0, y: 0, z: 1 } },  // Front face
+            { v:, normal: { x: -1, y: 0, z: 0 } }, // Left face
+            { v:, normal: { x: 0, y: -1, z: 0 } }, // Top face
+            { v:, normal: { x: 0, y: 1, z: 0 } }   // Bottom face
+        ];
+
+        // 2. COMPUTE MOVEMENT ROTATIONAL ANGLE STATE HOOKS TRACKERS
+        let currentRotationAngleX = 0.5; // Default viewing angular positions values
+        let currentRotationAngleY = 0.6; 
+
+        // 3. MOUSE INTERACTIVE LOOK-AROUND ORBIT MONITOR CONTROLS
+        let isClickDraggingMouse = false;
+        let previousCursorCoordinates = { x: 0, y: 0 };
+
+        window.addEventListener('mousedown', (e) => {
+            isClickDraggingMouse = true;
+            previousCursorCoordinates = { x: e.clientX, y: e.clientY };
         });
 
-        function initCustom3DEngine() {
-            const container = document.getElementById('render-container');
-            const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x050508);
+        window.addEventListener('mouseup', () => { isClickDraggingMouse = false; });
+        window.addEventListener('mouseleave', () => { isClickDraggingMouse = false; });
 
-            // 1. DYNAMIC PERSPECTIVE CAMERA MATRIX Setup
-            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 2, 4);
+        // Evaluates tracking changes drag sweeps coordinates vector metrics to update angles fields
+        window.addEventListener('mousemove', (e) => {
+            if (!isClickDraggingMouse) return;
 
-            // 2. WebGL RENDERING ENGINE Setup
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            container.appendChild(renderer.domElement);
+            const deltaMoveVectorX = e.clientX - previousCursorCoordinates.x;
+            const deltaMoveVectorY = e.clientY - previousCursorCoordinates.y;
 
-            // 3. STAGE GRID FLOOR HELPER MESH
-            const gridFloorHelper = new THREE.GridHelper(20, 20, 0x444444, 0x1f2330);
-            gridFloorHelper.position.y = -1.0;
-            scene.add(gridFloorHelper);
+            // Maps drag actions directly onto coordinate angular steps variables coefficients
+            currentRotationAngleY += deltaMoveVectorX * 0.01; // Left / Right pan looking orientation
+            currentRotationAngleX += deltaMoveVectorY * 0.01; // Up / Down tilt looking orientation
 
-            // 4. CRISP STUDIO ILLUMINATION LIGHTS
-            const lightTop = new THREE.DirectionalLight(0xffffff, 1.5);
-            lightTop.position.set(5, 10, 5);
-            scene.add(lightTop);
+            previousCursorCoordinates = { x: e.clientX, y: e.clientY };
+        });
 
-            const lightBack = new THREE.DirectionalLight(0xffffff, 0.8);
-            lightBack.position.set(-5, 5, -5);
-            scene.add(lightBack);
+        // Touch pad mobile device scaling listeners mappings for responsive handling
+        window.addEventListener('touchstart', (e) => {
+            isClickDraggingMouse = true;
+            previousCursorCoordinates = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        });
+        window.addEventListener('touchend', () => { isClickDraggingMouse = false; });
+        window.addEventListener('touchmove', (e) => {
+            if (!isClickDraggingMouse) return;
+            const deltaMoveVectorX = e.touches[0].clientX - previousCursorCoordinates.x;
+            const deltaMoveVectorY = e.touches[0].clientY - previousCursorCoordinates.y;
+            currentRotationAngleY += deltaMoveVectorX * 0.015;
+            currentRotationAngleX += deltaMoveVectorY * 0.015;
+            previousCursorCoordinates = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        });
 
-            const ambientCoreBaseLight = new THREE.AmbientLight(0xffffff, 0.4);
-            scene.add(ambientCoreBaseLight);
+        // =========================================================
+        // 🔮 CORE GRAPHICS RENDERING MATRIX PROCESS PIPELINE ENGINE
+        // =========================================================
+        function drawFrameUpdateLoop() {
+            // Clear entire screen workspace canvas frame channel coordinates
+            ctx.fillStyle = '#050508';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 5. SPAWN THE PURE WHITE 3D TARGET CUBE BLOCK
-            const structuralBoxGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
-            const blockMaterial = new THREE.MeshStandardMaterial({
-                color: 0xffffff,
-                roughness: 0.2,
-                metalness: 0.1
-            });
-            const mainBlockMesh = new THREE.Mesh(structuralBoxGeo, blockMaterial);
-            scene.add(mainBlockMesh);
+            const originCenterX = canvas.width / 2;
+            const originCenterY = canvas.height / 2;
 
-            // 6. CUSTOM NATIVE CLICK-AND-DRAG CALCULATION SYSTEM
-            let isDraggingMouse = false;
-            let previousMousePosition = { x: 0, y: 0 };
-
-            // Triggers rotation values the moment mouse clicks down over viewport
-            window.addEventListener('mousedown', (e) => {
-                isDraggingMouse = true;
-                previousMousePosition = { x: e.clientX, y: e.clientY };
-            });
-
-            window.addEventListener('mouseup', () => {
-                isDraggingMouse = false;
-            });
-
-            // Calculates changes in coordinates to turn the block up, down, left, and right
-            window.addEventListener('mousemove', (e) => {
-                if (!isDraggingMouse) return;
-
-                const deltaMove = {
-                    x: e.clientX - previousMousePosition.x,
-                    y: e.clientY - previousMousePosition.y
-                };
-
-                // Apply rotation tracking updates to the cube geometry group directly
-                mainBlockMesh.rotation.y += deltaMove.x * 0.007; // Sweeps Left and Right
-                mainBlockMesh.rotation.x += deltaMove.y * 0.007; // Tilts Up and Down
-
-                previousMousePosition = { x: e.clientX, y: e.clientY };
-            });
-
-            // Touch Screen Support for Chromebook trackpads
-            window.addEventListener('touchstart', (e) => {
-                isDraggingMouse = true;
-                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-            });
-
-            window.addEventListener('touchend', () => {
-                isDraggingMouse = false;
-            });
-
-            window.addEventListener('touchmove', (e) => {
-                if (!isDraggingMouse) return;
-                const deltaMove = {
-                    x: e.touches[0].clientX - previousMousePosition.x,
-                    y: e.touches[0].clientY - previousMousePosition.y
-                };
-                mainBlockMesh.rotation.y += deltaMove.x * 0.01;
-                mainBlockMesh.rotation.x += deltaMove.y * 0.01;
-                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-            });
-
-            // 7. RENDER ANIMATION TICK REFRESH ENGINE LOOP
-            function frameUpdateEngine() {
-                requestAnimationFrame(frameUpdateEngine);
-                
-                // Keep target camera locked directly looking onto origin point coordinates
-                camera.lookAt(0, 0, 0);
-                
-                renderer.render(scene, camera);
+            // A. Draw Perspective Ambient Workspace Floor Grid Matrix
+            ctx.strokeStyle = '#16192b';
+            ctx.lineWidth = 1;
+            for(let gridLine = -5; gridLine <= 5; gridLine++) {
+                // Background matrix geometry structural calculations coordinates projections 
+                let startPointX = originCenterX + (gridLine * 60);
+                ctx.beginPath();
+                ctx.moveTo(startPointX, originCenterY + 140);
+                ctx.lineTo(originCenterX + (gridLine * 150), canvas.height);
+                ctx.stroke();
             }
-            frameUpdateEngine();
 
-            // 8. DYNAMIC RESOLUTION SCALING
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
+            // B. Run Coordinate Transform System Loops mapping 3D structures vectors data
+            let computedProjectedVertices = [];
+            
+            const trigonometricCosX = Math.cos(currentRotationAngleX);
+            const trigonometricSinX = Math.sin(currentRotationAngleX);
+            const trigonometricCosY = Math.cos(currentRotationAngleY);
+            const trigonometricSinY = Math.sin(currentRotationAngleY);
+
+            blockVertices.forEach(v => {
+                // Rotate calculation passes sequence coordinate axis 1 (Y rotation - Looking Left/Right)
+                let rotatedX1 = v.x * trigonometricCosY - v.z * trigonometricSinY;
+                let rotatedZ1 = v.x * trigonometricSinY + v.z * trigonometricCosY;
+
+                // Rotate calculation passes sequence coordinate axis 2 (X rotation - Looking Up/Down)
+                let rotatedY2 = v.y * trigonometricCosX - rotatedZ1 * trigonometricSinX;
+                let rotatedZ2 = v.y * trigonometricSinX + rotatedZ1 * trigonometricCosX;
+
+                // 3D Perspective Focal Depth Ratio Divider Calculations (Simulates geometric perspective scaling)
+                const focalPerspectiveDistance = 400;
+                const visualScaleRatio = focalPerspectiveDistance / (focalPerspectiveDistance + rotatedZ2);
+                
+                let projectionScreenX = originCenterX + rotatedX1 * visualScaleRatio;
+                let projectionScreenY = originCenterY + rotatedY2 * visualScaleRatio;
+
+                computedProjectedVertices.push({ x: projectionScreenX, y: projectionScreenY, depthZ: rotatedZ2 });
             });
-        }
-    </script>
-</body>
-</html>
+
+            // C. Depth Sorting Algorithms (Ensures faces closest to camera overlap background structures safely)
+            let renderFacesStack = [];
+            blockFacesIndex.forEach(faceIndexProfile => {
+                const verticesList = faceIndexProfile.v;
+                // Calculate average depth metrics value settings profile parameters
+                let averageDepthDistanceZ = (computedProjectedVertices[verticesList[0]].depthZ + 
+                                             computedProjectedVertices[verticesList[1]].depthZ + 
+                                             computedProjectedVertices[verticesList[2]].depthZ + 
+                                             computedProjectedVertices[verticesList[3]].depthZ) / 4;
+
+                // Simple Vector Cross Product Surface Calculations (Back-face culling logic algorithm)
+                const pointA = computedProjectedVertices[verticesList[0]];
+                const pointB = computedProjectedVertices[verticesList[1]];
+                const pointC = computedProjectedVertices[verticesList[2]];
+                
+                let surfaceVectorCrossValue = (pointB.x - pointA.x) * (pointC.y - pointB.y) - (pointB.y - pointA.y) * (pointC.x - pointB.x);
+
+                // If surface is facing towards the active camera grid vector point, push onto drawing stack
+                if (surfaceVectorCrossValue > 0) {
+                    renderFacesStack.push({ face: faceIndexProfile, depthZ: averageDepthDistanceZ });
+                }
+            });
+
+            // Sort face stacking orders array metrics tracking index layer values positions
+            renderFacesStack.sort((faceA, faceB) => faceB.depthZ - faceA.depthZ);
+
+            // D. Draw Layer Faces blocks mapping shading matrices arrays
+            renderFacesStack.forEach(renderTarget => {
+                const activeIndices = renderTarget.face.v;
+                
+                ctx.beginPath();
+                ctx.moveTo(computedProjectedVertices[activeIndices[0]].x, computedProjectedVertices[activeIndices[0]].y);
+                for(let edgePoint = 1; edgePoint < 4; edgePoint++) {
