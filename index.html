@@ -8,68 +8,30 @@
         body { margin: 0; background: #050508; overflow: hidden; height: 100vh; font-family: sans-serif; }
         canvas { display: block; width: 100vw; height: 100vh; cursor: grab; }
         canvas:active { cursor: grabbing; }
-
-        /* The Custom Blue Menu Toggle button */
         .menu-toggle-btn {
-            position: absolute; top: 20px; left: 20px; 
-            z-index: 999;
-            background: #0072ff; color: white; border: none; padding: 12px 24px;
-            font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 114, 255, 0.4);
+            position: absolute; top: 20px; left: 20px; z-index: 999;
+            background: #0072ff; color: white; border: none; padding: 12px 24px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 114, 255, 0.4);
         }
-        .menu-toggle-btn:hover { background: #0052d4; }
-
-        /* Slide-Out Black Menu Container Drawer */
         .side-menu-drawer {
             position: absolute; top: 0; left: -260px; width: 260px; height: 100vh;
-            background: #000000; border-right: 2px solid #222222; 
-            z-index: 50; transition: left 0.3s ease-in-out; 
-            padding: 90px 20px 20px 20px; box-sizing: border-box;
-            box-shadow: 5px 0 25px rgba(0,0,0,0.8);
-            display: flex; flex-direction: column; gap: 15px;
+            background: #000000; border-right: 2px solid #222222; z-index: 50;
+            transition: left 0.3s ease-in-out; padding: 90px 20px 20px 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 15px;
         }
         .side-menu-drawer.open { left: 0; }
-
-        .drawer-btn {
-            background: #ffffff; color: #000000; border: none; width: 100%; padding: 12px;
-            font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer;
-            text-align: center; text-decoration: none; display: block; box-sizing: border-box;
-        }
-        .drawer-btn:hover { background: #e0e0e0; }
-
-        /* The Parts Display Drawer Area */
-        .parts-display-box {
-            display: none; background: #0f1015; border: 1px solid #222233;
-            border-radius: 6px; padding: 10px; margin-top: 5px;
-            max-height: 350px; overflow-y: auto; flex-direction: column; gap: 12px;
-        }
+        .drawer-btn { background: #ffffff; color: #000000; border: none; width: 100%; padding: 12px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; text-align: center; text-decoration: none; display: block; }
+        .parts-display-box { display: none; background: #0f1015; border: 1px solid #222233; border-radius: 6px; padding: 10px; margin-top: 5px; max-height: 350px; overflow-y: auto; flex-direction: column; gap: 12px; }
         .parts-display-box.show { display: flex; }
-
-        /* MATCHING STYLE FROM IMAGE: Green-accented Draggable Hardware Component Cards */
+        
+        /* MATCHING DRAG STYLE: Render your signature green line cards */
         .bought-item-tag {
-            background: #14151f;
-            border: 1px solid #2d2d44;
-            padding: 12px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            color: #ffffff;
-            border-left: 4px solid #00ff88; /* The signature green indicator strip */
-            cursor: grab; /* Shows hand grab shape when hovering over parts */
-            user-select: none;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            background: #14151f; border: 1px solid #2d2d44; padding: 12px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; color: #ffffff; border-left: 4px solid #00ff88;
+            cursor: grab; user-select: none; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
         .bought-item-tag:active { cursor: grabbing; opacity: 0.5; }
-
-        /* HUD Overlay Feedback Banner */
-        .hud-status-banner {
-            position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.85); border: 1px solid #00ff88; color: #00ff88;
-            padding: 12px 28px; border-radius: 20px; font-size: 14px; font-weight: bold;
-            display: none; z-index: 10; pointer-events: none;
-            box-shadow: 0 0 20px rgba(0,255,136,0.3);
-        }
+        .hud-status-banner { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); border: 1px solid #00ff88; color: #00ff88; padding: 12px 28px; border-radius: 20px; font-size: 14px; font-weight: bold; display: none; z-index: 10; box-shadow: 0 0 20px rgba(0,255,136,0.3); }
     </style>
+    <!-- Connect the shared layout bridge routing script file -->
+    <script src="storage.js"></script>
 </head>
 <body>
 
@@ -78,101 +40,75 @@
     <div class="side-menu-drawer" id="sideMenu">
         <a href="store.html" class="drawer-btn">🌐 Browser</a>
         <button class="drawer-btn" onclick="togglePartsList()">📦 Parts</button>
-        
         <div class="parts-display-box" id="partsDisplay">
-            <!-- Completely empty at start until parts are bought from the shop -->
             <p id="empty-hint" style="color: #555; font-size: 12px; text-align: center; margin: 5px 0;">No parts found. Go to the store browser to buy parts!</p>
         </div>
     </div>
 
     <div class="hud-status-banner" id="hudBanner"></div>
-
     <canvas id="c"></canvas>
     
     <script>
         let installedComponentsList = [];
-
-        function toggleSideMenu() {
-            document.getElementById('sideMenu').classList.toggle('open');
-        }
-
+        function toggleSideMenu() { document.getElementById('sideMenu').classList.toggle('open'); }
         function togglePartsList() {
             const displayBox = document.getElementById('partsDisplay');
             displayBox.classList.toggle('show');
-            if(displayBox.classList.contains('show')) {
-                renderInventoryList();
-            }
+            if(displayBox.classList.contains('show')) { renderInventoryList(); }
         }
 
-        // 1. DYNAMIC DATA HARVESTER READING REAL-TIME SHOP PURCHASES
+        // 1. DATA RECEIVER LOADING VIA CENTRAL STORAGE.JS ROUTER FILE
         function renderInventoryList() {
             const containerBox = document.getElementById('partsDisplay');
-            // Reads the shared browser save cache profile updated by store.html
-            const inventoryData = JSON.parse(localStorage.getItem('pc_simulator_inventory')) || [];
-            
-            // Exclude items that are already installed inside the cube framework
+            // ACCESS VAULT THROUGH STORAGE ROUTER ENGINE CALLS
+            const inventoryData = getPartsFromStorage();
             const availableItems = inventoryData.filter(part => !installedComponentsList.includes(part));
 
             if(availableItems.length === 0) {
                 containerBox.innerHTML = `<p style="color: #555; font-size: 12px; text-align: center; margin: 5px 0;">No parts found. Go to the store browser to buy parts!</p>`;
                 return;
             }
-            
-            containerBox.innerHTML = ""; // Flush default status placeholders
-            
+            containerBox.innerHTML = "";
             availableItems.forEach(item => {
                 const partCard = document.createElement('div');
-                partCard.className = 'bought-item-tag'; // Matches style from image configuration
+                partCard.className = 'bought-item-tag'; // Matches the green line style
                 partCard.innerText = item;
                 
-                // UNLOCKS TRUE DRAG AND DROP CAPABILITIES:
+                // UNLOCKS THE DRAGGABLE MOUSE PROPERTIES
                 partCard.draggable = true;
-                partCard.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', item);
-                });
-
+                partCard.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', item); });
                 containerBox.appendChild(partCard);
             });
         }
 
-        // --- CONFIGURE CANVAS DRAG AND DROP DETECTION AREAS ---
+        // --- ATTACH DROP LISTENER TRIGGERS TO 3D SCREEN CANVAS ---
         const canvasElement = document.getElementById('c');
-
-        canvasElement.addEventListener('dragover', (e) => {
-            e.preventDefault(); // Unlocks dropping permissions across standard browser bounds
-        });
-
+        canvasElement.addEventListener('dragover', (e) => { e.preventDefault(); });
         canvasElement.addEventListener('drop', (e) => {
             e.preventDefault();
             const droppedPartName = e.dataTransfer.getData('text/plain');
             if (!droppedPartName) return;
-
-            // Trigger structural distance placement calculation check routines
             executeInstallation(droppedPartName, e.clientX, e.clientY);
         });
 
         function executeInstallation(partName, mouseX, mouseY) {
-            const centerX = w / 2;
-            const centerY = h / 2;
+            const centerX = w / 2, centerY = h / 2;
             const dragDistanceToCube = Math.hypot(mouseX - centerX, mouseY - centerY);
 
-            if (dragDistanceToCube < 130) { // Snaps item if dropped near the center 3D block bounds
+            if (dragDistanceToCube < 130) {
                 installedComponentsList.push(partName);
-                
                 const banner = document.getElementById('hudBanner');
                 banner.innerText = `🎉 Successfully Installed: [ ${partName} ] locked into the Core Rig Block!`;
                 banner.style.display = 'block';
-                
-                renderInventoryList(); // Re-index list to clear the spent tag instantly
-                document.getElementById('sideMenu').classList.remove('open'); // Close panel
-
+                renderInventoryList();
+                document.getElementById('sideMenu').classList.remove('open');
                 setTimeout(() => { banner.style.display = 'none'; }, 4000);
             } else {
                 alert("⚠️ Drop Missed! Make sure to drop the part directly on top of the central 3D cube block!");
             }
         }
 
-        // --- 2. PURE 3D ENGINE GRAPHICS DRAW PIPELINE ---
+        // --- 2. PURE 3D VIEWPORT ENGINE CODE ---
         const ctx = c.getContext('2d');
         let w = c.width = window.innerWidth, h = c.height = window.innerHeight;
         window.onresize = () => { w = c.width = window.innerWidth; h = c.height = window.innerHeight; };
@@ -181,19 +117,11 @@
             {x:-80, y:-80, z:-80}, {x:80, y:-80, z:-80}, {x:80, y:80, z:-80}, {x:-80, y:80, z:-80},
             {x:-80, y:-80, z:80},  {x:80, y:-80, z:80},  {x:80, y:80, z:80},  {x:-80, y:80, z:80}
         ];
-        const faces = [,,,,,
-        ];
+        const faces = [,,,,,];
 
         let rx = 0.5, ry = 0.6, drag = false, px = 0, py = 0;
-        const start = e => { 
-            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.classList.contains('bought-item-tag')) return; 
-            drag = true; px = e.clientX || e.touches.clientX; py = e.clientY || e.touches.clientY; 
-        };
-        const move = e => {
-            if (!drag) return;
-            let cx = e.clientX || e.touches.clientX, cy = e.clientY || e.touches.clientY;
-            ry += (cx - px) * 0.01; rx += (cy - py) * 0.01; px = cx; py = cy;
-        };
+        const start = e => { if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.classList.contains('bought-item-tag')) return; drag = true; px = e.clientX || e.touches.clientX; py = e.clientY || e.touches.clientY; };
+        const move = e => { if (!drag) return; let cx = e.clientX || e.touches.clientX, cy = e.clientY || e.touches.clientY; ry += (cx - px) * 0.01; rx += (cy - py) * 0.01; px = cx; py = cy; };
         window.onmousedown = window.ontouchstart = start;
         window.onmouseup = window.onmouseleave = window.ontouchend = () => drag = false;
         window.onmousemove = window.ontouchmove = move;
@@ -201,7 +129,6 @@
         function draw() {
             ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, w, h);
             let cx = Math.cos(rx), sx = Math.sin(rx), cy = Math.cos(ry), sy = Math.sin(ry);
-            
             let screen = pts.map(p => {
                 let x1 = p.x * cy - p.z * sy, z1 = p.x * sy + p.z * cy;
                 let y2 = p.y * cx - z1 * sx,  z2 = p.y * sx + z1 * cx;
@@ -214,3 +141,22 @@
                 let area = (screen[f].x - screen[f].x) * (screen[f].y - screen[f].y) - (screen[f].y - screen[f].y) * (screen[f].x - screen[f].x);
                 return { f, z, show: area > 0 };
             })
+            .filter(f => f.show).sort((a,b) => b.z - a.z).forEach(f => {
+                ctx.beginPath(); ctx.moveTo(screen[f.f].x, screen[f.f].y);
+                f.f.forEach(i => ctx.lineTo(screen[i].x, screen[i].y));
+                ctx.closePath();
+                let bright = Math.floor(180 + 75 * Math.abs(Math.cos(rx)));
+                if (installedComponentsList.length > 0) {
+                    ctx.fillStyle = `rgb(${Math.floor(bright*0.05)}, ${Math.floor(bright*0.85)}, ${Math.floor(bright*0.4)})`;
+                } else {
+                    ctx.fillStyle = `rgb(${bright}, ${bright}, ${bright})`; 
+                }
+                ctx.strokeStyle = installedComponentsList.length > 0 ? '#00ffaa' : '#ffffff'; 
+                ctx.lineWidth = 2; ctx.stroke();
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+    </script>
+</body>
+</html>
